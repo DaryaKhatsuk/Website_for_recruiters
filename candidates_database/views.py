@@ -1,3 +1,9 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def error_404(request, exception):
+    return render(request, 'base.html', status=404)
+
+
+def error_500(request):
+    return render(request, 'base.html', status=500)

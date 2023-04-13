@@ -1,52 +1,80 @@
 from django import forms
-from django.contrib.auth.models import User
-from models import Notes, Company, Currency, Candidate, Vacancy, Emails, Meetings, AppendLine, Selection, SelectionStage
+
+from models import Notes, Company, Currency, Comments, Candidate, Vacancy, Emails, AppendLine, SelectionStage
+
+
+class AppendLineForm(forms.ModelForm):
+    name_line = forms.CharField(max_length=50, label='Name line')
+
+    class Meta:
+        model = AppendLine
+        fields = ('name_line', 'line')
+
+
+class SelectionStageForm(forms.ModelForm):
+    name = forms.CheckboxSelectMultiple(choices=('Candidate Selection', 'Screening interview', 'Test', 'Interview',
+                                                 'Offer', 'Accepted offer', 'Exit to work'))
+
+    class Meta:
+        model = SelectionStage
+        fields = ('name',)
+
+
+class CommentsForm(forms.ModelForm):
+    comment = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
+
+    class Meta:
+        model = Comments
+        fields = ('comment',)
 
 
 class NotesForm(forms.ModelForm):
-    title = forms.CharField(max_length=50)
-    note = forms.CharField(max_length=1000, null=True, blank=True, widget=forms.Textarea)
+    note = forms.CharField(max_length=1024, null=True, blank=True, widget=forms.Textarea)
 
     class Meta:
         model = Notes
         fields = ('title', 'note')
+
+
+class CurrencyForm(forms.ModelForm):
+    choices_lang = forms.RadioSelect(choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
+
+    class Meta:
+        model = Currency
+        fields = ('choices_lang',)
+
 
 class CompanyForm(forms.ModelForm):
-    name = forms.CharField(max_length=100)
-    website = models.URLField(null=True, blank=True)
-    description = models.CharField(max_length=300, widget=forms.Textarea, null=True, blank=True)
-    industry = models.CharField(max_length=100, null=True, blank=True)
+    description = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
+    comments = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
 
     class Meta:
-        model = Notes
-        fields = ('name', 'website', 'description', 'industry', 'comments')
+        model = Company
+        fields = ('name', 'website', 'description', 'industry', 'comments', 'append_line')
+
 
 class VacancyForm(forms.ModelForm):
-    title = forms.CharField(max_length=100)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    description = models.TextField()
-    salary_min = models.IntegerField(null=True, blank=True)
-    salary_max = models.IntegerField(null=True, blank=True)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
-    location = models.CharField(max_length=100)
+    description = forms.CharField(max_length=1024, widget=forms.Textarea)
+    comments = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
 
     class Meta:
-        model = Notes
-        fields = ('title', 'note')
+        model = Vacancy
+        fields = ('title', 'company', 'description', 'salary_min', 'salary_max', 'currency', 'location', 'comments',
+                  'append_line')
 
-class NotesForm(forms.ModelForm):
+
+class EmailsForm(forms.ModelForm):
+    content = forms.CharField(max_length=1024, null=True, blank=True, widget=forms.Textarea)
+
+    class Meta:
+        model = Emails
+        fields = ('sender', 'recipient', 'title', 'content', 'sent_at')
+
+
+class CandidateForm(forms.ModelForm):
     title = forms.CharField(max_length=50)
     note = forms.CharField(max_length=1000, null=True, blank=True, widget=forms.Textarea)
 
     class Meta:
-        model = Notes
+        model = Candidate
         fields = ('title', 'note')
-
-class NotesForm(forms.ModelForm):
-    title = forms.CharField(max_length=50)
-    note = forms.CharField(max_length=1000, null=True, blank=True, widget=forms.Textarea)
-
-    class Meta:
-        model = Notes
-        fields = ('title', 'note')
-

@@ -2,6 +2,12 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+class AppendLine(models.Model):
+    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
+    name_line = models.CharField(max_length=50)
+    line = models.CharField(max_length=100)
+
+
 class Comments(models.Model):
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=300, null=True, blank=True)
@@ -21,7 +27,8 @@ class Company(models.Model):
     website = models.URLField(null=True, blank=True)
     description = models.CharField(max_length=300, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
-    comments = models.CharField(User, on_delete=models.CASCADE)
+    comments = models.CharField(Comments, on_delete=models.CASCADE)
+    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.name}'
@@ -31,8 +38,10 @@ class Company(models.Model):
         verbose_name_plural = "Company's"
         ordering = ('name',)
 
+
 class Currency(models.Model):
     choices_lang = models.CharField(max_length=4, choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
+
     def __str__(self):
         return f'{self.choices_lang}'
 
@@ -41,15 +50,18 @@ class Currency(models.Model):
         verbose_name_plural = "Currency's"
         ordering = ('choices_lang',)
 
+
 class Vacancy(models.Model):
     title = models.CharField(max_length=100)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    description = models.TextField()
+    description = models.CharField(max_length=1024)
     salary_min = models.IntegerField(null=True, blank=True)
     salary_max = models.IntegerField(null=True, blank=True)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
-    location = models.CharField(max_length=100)
+    location = models.CharField(max_length=100, null=True, blank=True)
     comments = models.CharField(User, on_delete=models.CASCADE)
+    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
+
     def __str__(self):
         return f'{self.title}'
 
@@ -57,19 +69,23 @@ class Vacancy(models.Model):
         verbose_name = "Vacancy"
         verbose_name_plural = "Vacancy's"
         ordering = ('title',)
+
+
 class Emails(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_emails')
     recipient = models.EmailField()
-    subject = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     content = models.CharField(max_length=1024)
     sent_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return f'{self.subject}'
+        return f'{self.title}'
 
     class Meta:
         verbose_name = "Email"
         verbose_name_plural = "Emails"
-        ordering = ('subject',)
+        ordering = ('title',)
+
 
 class Candidate(models.Model):
     full_name = models.CharField(max_length=200)
@@ -88,6 +104,7 @@ class Candidate(models.Model):
     source = models.URLField(null=True, blank=True)
     message = models.CharField(Emails, max_length=1000, null=True, blank=True)
     comments = models.CharField(User, on_delete=models.CASCADE)
+    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.full_name}'
@@ -95,7 +112,8 @@ class Candidate(models.Model):
     class Meta:
         verbose_name = "Candidate"
         verbose_name_plural = "Candidates"
-        ordering = ('full_name','status', 'experience')
+        ordering = ('full_name', 'status', 'experience')
+
 
 class Meetings(models.Model):
     title = models.CharField(max_length=100)
@@ -104,6 +122,7 @@ class Meetings(models.Model):
     attendees = models.ManyToManyField(User, related_name='meetings_attending')
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meetings_organizing')
     participant = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='meetings_organizing')
+    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.title}, {self.date}, {self.participant}'
@@ -111,12 +130,14 @@ class Meetings(models.Model):
     class Meta:
         verbose_name = "Meeting"
         verbose_name_plural = "Meetings"
-        ordering = ('title','date', 'location', 'participant')
+        ordering = ('title', 'date', 'location', 'participant')
+
 
 class Notes(models.Model):
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     note = models.CharField(max_length=1024, null=True, blank=True)
+
     def __str__(self):
         return f'{self.title}'
 
@@ -125,8 +146,10 @@ class Notes(models.Model):
         verbose_name_plural = "Notes"
         ordering = ('title',)
 
+
 class SelectionStage(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=30, choices=('Candidate Selection', 'Screening interview', 'Test', 'Interview',
+                                                    'Offer', 'Accepted offer', 'Exit to work'))
 
 
 class Selection(models.Model):
@@ -134,6 +157,7 @@ class Selection(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
     stages = models.ManyToManyField(SelectionStage, through=SelectionStage(status))
+
     def __str__(self):
         return f'{self.vacancy}'
 
@@ -141,8 +165,3 @@ class Selection(models.Model):
         verbose_name = "Selection"
         verbose_name_plural = "Selection"
         ordering = ('candidate', 'vacancy', 'status', 'stages',)
-
-class AppendLine(models.Model):
-    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
-    name_line = models.CharField(max_length=50)
-    line = models.CharField(max_length=100)
