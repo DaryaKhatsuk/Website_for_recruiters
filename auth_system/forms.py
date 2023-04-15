@@ -1,15 +1,18 @@
 from django import forms
 from django.contrib.auth.models import User
+
+
 # from .models import
 
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
     username = forms.CharField(label='Username', help_text='The username must be unique and contain no spaces',
-                               max_length=50)
+                               max_length=50, error_messages='This name is already taken', unique=True)
     name = forms.CharField(label='Name', max_length=50)
-    email = forms.CharField(label='Email', max_length=50, widget=forms.EmailInput,
-                            help_text='Please use a valid email address so that you can be contacted')
+    email = forms.CharField(label='Email', max_length=155, widget=forms.EmailInput,
+                            help_text='Please use a valid email address so that you can be contacted',
+                            error_messages='This email address is invalid or already taken', unique=True)
     ConsentDataProcessing = forms.NullBooleanField(label='Consent to data processing')
 
     class Meta:
@@ -18,7 +21,7 @@ class RegistrationForm(forms.ModelForm):
 
 
 class AccountVerifForm(forms.ModelForm):
-    code = forms.CharField(max_length=10, label='Code')
+    code = forms.CharField(max_length=12, label='Code')
 
     class Meta:
         model = User
@@ -50,22 +53,30 @@ class AccountDelForm(forms.ModelForm):
         fields = ('email',)
 
 
-# class CommentsForm(forms.ModelForm):
-#     UserText = forms.CharField(max_length=1024, label='Comment', widget=forms.Textarea)
-#
-#     class Meta:
-#         model = Comments
-#         fields = ('UserText',)
+class AccountVerif(forms.ModelForm):
+    code = forms.CharField(max_length=10, label='Code')
+
+    class Meta:
+        model = User
+        fields = ('code',)
 
 
-# PRODUCT_QUANTITY_CHOICES = [(i, str(i)) for i in range(1, 101)]
-#
-#
-# class CartAddProductForm(forms.Form):
-#     quantity = forms.TypedChoiceField(choices=PRODUCT_QUANTITY_CHOICES, coerce=int)
-#     update = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
-#
-#
+class SaveLocation(forms.ModelForm):
+    selecting = forms.CharField(max_length=12, label='Selecting', choices=(('D', 'On device'), ('S', 'On server')))
+    location = forms.FileField(max_length=255, label='Location', null=True, blank=True)
+
+    class Meta:
+        model = User
+        fields = ('selecting', 'location')
+
+
+class Language(forms.ModelForm):
+    language = forms.CharField(max_length=3, label='Language', choices=(('EN', 'English'), ('RU', 'Русский')))
+
+    class Meta:
+        model = User
+        fields = ('language',)
+
 # class SupportForm(forms.ModelForm):
 #     UserText = forms.CharField(max_length=2000, label='Message', widget=forms.Textarea)
 #     emailUser = forms.CharField(label='Email', max_length=100, widget=forms.EmailInput)
