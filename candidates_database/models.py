@@ -148,8 +148,8 @@ class Notes(models.Model):
 
 
 class SelectionStage(models.Model):
-    name = models.CharField(max_length=30, choices=('Candidate Selection', 'Screening interview', 'Test', 'Interview',
-                                                    'Offer', 'Accepted offer', 'Exit to work'))
+    name = models.CharField(max_length=30, choices=(('CS', 'Candidate Selection'), ('SI', 'Screening interview'),
+                                                    ('O', 'Offer'), ('AO', 'Accepted offer'), ('EtW', 'Exit to work')))
 
 
 class Selection(models.Model):

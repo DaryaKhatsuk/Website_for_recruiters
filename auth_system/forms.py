@@ -11,12 +11,10 @@ class RegistrationForm(forms.ModelForm):
     email = forms.CharField(label='Email', max_length=50, widget=forms.EmailInput,
                             help_text='Please use a valid email address so that you can be contacted')
     ConsentDataProcessing = forms.NullBooleanField(label='Consent to data processing')
-    code = forms.CharField(max_length=10)
-    state_acc = forms.CharField(max_length=4, choices=(('A', 'Active'), ('U', 'Unverified'), ('B', 'Blocked')))
 
     class Meta:
         model = User
-        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'state_acc', 'password')
+        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'password')
 
 
 class AccountVerifForm(forms.ModelForm):
