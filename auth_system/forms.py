@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from filebrowser.fields import FileBrowseField
-from .models import AccountVerif, Language
+from .models import AccountVerif, Language, AccountDirectory
 
 
 class RegistrationForm(forms.ModelForm):
@@ -13,7 +12,6 @@ class RegistrationForm(forms.ModelForm):
                             help_text='Please use a valid email address so that you can be contacted')
     CHOICES = [('D', 'On device'), ('S', 'On server')]
     selecting = forms.TypedChoiceField(choices=CHOICES, coerce=str)
-    directory = FileBrowseField('Directory', max_length=255)
     ConsentDataProcessing = forms.TypedChoiceField(label='Consent to data processing', choices=((True, 'Yes'),
                                                                                                 (False, 'No')))
 
@@ -29,15 +27,21 @@ class RegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'password', 'selecting', 'location')
+        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'password', 'selecting')
 
 
-class AccountVerifForm(forms.ModelForm):
-    code = forms.CharField(max_length=12, label='Code')
+class AccountDirectoryForm(forms.ModelForm):
 
     class Meta:
         model = AccountVerif
         fields = ('code',)
+
+
+class AccountVerifForm(forms.ModelForm):
+
+    class Meta:
+        model = AccountDirectory
+        fields = ('directory',)
 
 
 class LoginForm(forms.ModelForm):

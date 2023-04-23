@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from filebrowser.fields import FileBrowseField
 
 
 class AccountVerif(models.Model):
@@ -11,6 +12,16 @@ class AccountVerif(models.Model):
         verbose_name = "AccountVerif"
         verbose_name_plural = "AccountVerif"
         ordering = ('state_acc',)
+
+
+class AccountDirectory(models.Model):
+    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
+    directory = FileBrowseField('Directory', max_length=255)
+
+    class Meta:
+        verbose_name = "AccountDirectory"
+        verbose_name_plural = "AccountDirectory"
+        ordering = ('directory',)
 
 
 class Language(models.Model):
