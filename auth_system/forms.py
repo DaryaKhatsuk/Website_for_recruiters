@@ -1,30 +1,42 @@
 from django import forms
 from django.contrib.auth.models import User
-
-
-# from .models import
+from filebrowser.fields import FileBrowseField
+from .models import AccountVerif, Language
 
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
     username = forms.CharField(label='Username', help_text='The username must be unique and contain no spaces',
-                               max_length=50, error_messages='This name is already taken', unique=True)
+                               max_length=50)
     name = forms.CharField(label='Name', max_length=50)
-    email = forms.CharField(label='Email', max_length=155, widget=forms.EmailInput,
-                            help_text='Please use a valid email address so that you can be contacted',
-                            error_messages='This email address is invalid or already taken', unique=True)
-    ConsentDataProcessing = forms.NullBooleanField(label='Consent to data processing')
+    email = forms.CharField(label='Email', max_length=255, widget=forms.EmailInput,
+                            help_text='Please use a valid email address so that you can be contacted')
+    CHOICES = [('D', 'On device'), ('S', 'On server')]
+    selecting = forms.TypedChoiceField(choices=CHOICES, coerce=str)
+    directory = FileBrowseField('Directory', max_length=255)
+    ConsentDataProcessing = forms.TypedChoiceField(label='Consent to data processing', choices=((True, 'Yes'),
+                                                                                                (False, 'No')))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        email = cleaned_data.get('email')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This email address is already taken.')
+        return cleaned_data
 
     class Meta:
         model = User
-        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'password')
+        fields = ('username', 'name', 'email', 'ConsentDataProcessing', 'password', 'selecting', 'location')
 
 
 class AccountVerifForm(forms.ModelForm):
     code = forms.CharField(max_length=12, label='Code')
 
     class Meta:
-        model = User
+        model = AccountVerif
         fields = ('code',)
 
 
@@ -53,34 +65,8 @@ class AccountDelForm(forms.ModelForm):
         fields = ('email',)
 
 
-class AccountVerif(forms.ModelForm):
-    code = forms.CharField(max_length=10, label='Code')
+class LanguageForm(forms.ModelForm):
 
     class Meta:
-        model = User
-        fields = ('code',)
-
-
-class SaveLocation(forms.ModelForm):
-    selecting = forms.CharField(max_length=12, label='Selecting', choices=(('D', 'On device'), ('S', 'On server')))
-    location = forms.FileField(max_length=255, label='Location', null=True, blank=True)
-
-    class Meta:
-        model = User
-        fields = ('selecting', 'location')
-
-
-class Language(forms.ModelForm):
-    language = forms.CharField(max_length=3, label='Language', choices=(('EN', 'English'), ('RU', 'Русский')))
-
-    class Meta:
-        model = User
+        model = Language
         fields = ('language',)
-
-# class SupportForm(forms.ModelForm):
-#     UserText = forms.CharField(max_length=2000, label='Message', widget=forms.Textarea)
-#     emailUser = forms.CharField(label='Email', max_length=100, widget=forms.EmailInput)
-#
-#     class Meta:
-#         model = Support
-#         fields = ('UserText', 'emailUser')

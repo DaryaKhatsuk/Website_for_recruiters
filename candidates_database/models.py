@@ -9,7 +9,6 @@ class AppendLine(models.Model):
 
 
 class Comments(models.Model):
-    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=300, null=True, blank=True)
 
     def __str__(self):
@@ -27,7 +26,7 @@ class Company(models.Model):
     website = models.URLField(null=True, blank=True)
     description = models.CharField(max_length=300, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
-    comments = models.CharField(Comments, on_delete=models.CASCADE)
+    comments = models.ForeignKey(Comments, on_delete=models.CASCADE)
     append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -40,7 +39,8 @@ class Company(models.Model):
 
 
 class Currency(models.Model):
-    choices_lang = models.CharField(max_length=4, choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
+    choices_lang = models.CharField(max_length=4, choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
+                                                           ('R', 'RUB'), ('P', 'PLN')))
 
     def __str__(self):
         return f'{self.choices_lang}'
@@ -59,7 +59,7 @@ class Vacancy(models.Model):
     salary_max = models.IntegerField(null=True, blank=True)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
-    comments = models.CharField(User, on_delete=models.CASCADE)
+    comments = models.ForeignKey(User, on_delete=models.CASCADE)
     append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -73,6 +73,7 @@ class Vacancy(models.Model):
 
 class Emails(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_emails')
+    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     recipient = models.EmailField()
     title = models.CharField(max_length=255)
     content = models.CharField(max_length=1024)
@@ -95,15 +96,18 @@ class Candidate(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
     location = models.CharField(max_length=100, blank=True)
     resume_file = models.FileField(upload_to='resumes/')
-    referred_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    referred_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                    related_name='candidates_referred')
     applied_vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=50)
     interview_date = models.DateTimeField(null=True, blank=True)
     experience = models.IntegerField(null=True, blank=True)
     cover_letter = models.CharField(max_length=1000, null=True, blank=True)
     source = models.URLField(null=True, blank=True)
-    message = models.CharField(Emails, max_length=1000, null=True, blank=True)
-    comments = models.CharField(User, on_delete=models.CASCADE)
+    message = models.ForeignKey(Emails, max_length=1000, null=True, blank=True, on_delete=models.CASCADE)
+    sun_emails = models.IntegerField(null=True, blank=True)
+    comments = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments_received', null=True,
+                                 blank=True)
     append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -148,15 +152,16 @@ class Notes(models.Model):
 
 
 class SelectionStage(models.Model):
-    name = models.CharField(max_length=30, choices=(('CS', 'Candidate Selection'), ('SI', 'Screening interview'),
-                                                    ('O', 'Offer'), ('AO', 'Accepted offer'), ('EtW', 'Exit to work')))
+    status = models.CharField(max_length=30, choices=(('CS', 'Candidate Selection'), ('SI', 'Screening interview'),
+                                                      ('O', 'Offer'), ('AO', 'Accepted offer'),
+                                                      ('EtW', 'Exit to work')))
 
 
 class Selection(models.Model):
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
-    stages = models.ManyToManyField(SelectionStage, through=SelectionStage(status))
+    stages = models.ManyToManyField(SelectionStage)
 
     def __str__(self):
         return f'{self.vacancy}'
@@ -164,4 +169,5 @@ class Selection(models.Model):
     class Meta:
         verbose_name = "Selection"
         verbose_name_plural = "Selection"
-        ordering = ('candidate', 'vacancy', 'status', 'stages',)
+        ordering = ('candidate', 'vacancy', 'status')
+

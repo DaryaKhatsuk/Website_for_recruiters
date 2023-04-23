@@ -78,3 +78,11 @@ class CandidateForm(forms.ModelForm):
     class Meta:
         model = Candidate
         fields = ('title', 'note')
+
+# class SupportForm(forms.ModelForm):
+#     UserText = forms.CharField(max_length=2000, label='Message', widget=forms.Textarea)
+#     emailUser = forms.CharField(label='Email', max_length=100, widget=forms.EmailInput)
+#
+#     class Meta:
+#         model = Support
+#         fields = ('UserText', 'emailUser')

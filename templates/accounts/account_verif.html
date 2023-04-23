@@ -12,23 +12,16 @@
 </head>
 <body>
     <div class="sect">
-          <form method="post">
-                {% csrf_token %}
-                <table>
+        <form method="post">
+            {% csrf_token %}
+            <table>
                     <tr>
-                        <td>{{ form.emailUser.label_tag }}</td>
-                        <td>{{ form.emailUser }}</td>
-                    </tr>
-
-                    <tr>
-                        <td>{{ form.UserText.label_tag }}</td>
-                        <td>{{ form.UserText }}</td>
-                    </tr>
-                    <tr>
-                        <td><input type="submit" value="Enter"></td>
+                        <td>{{ form.code.label_tag }}</td>
+                        <td>{{ form.code }}</td>
                     </tr>
                 </table>
-            </form>
+            <input type="submit" value="Confirm">
+        </form>
     </div>
 </body>
 {% endblock %}

@@ -1,7 +1,17 @@
+@font-face {
+    font-family: 'OpenSans';
+    /*src: url("../fonts/ClearSans-Light.ttf") format("truetype");*/
+    src: url("../fonts/OpenSans.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+}
+
 *{
     padding: 0px;
     margin: 0px;
     color: #192949;
+    /*font-family: "DejaVu Sans";*/
+    /*font-family: "Microsoft Sans Serif";*/
 }
 
 body{
