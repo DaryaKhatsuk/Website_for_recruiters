@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import AccountVerif, Language, AccountDirectory
+from .models import AccountVerif, Language, AccountDirectory, Support
 
 
 class RegistrationForm(forms.ModelForm):
@@ -38,6 +38,12 @@ class AccountDirectoryForm(forms.ModelForm):
 
 
 class AccountVerifForm(forms.ModelForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        code = cleaned_data.get('code')
+        if AccountVerif.objects.filter(code=code).exists():
+            raise forms.ValidationError('Invalid verification code.')
+        return cleaned_data
 
     class Meta:
         model = AccountDirectory
@@ -74,3 +80,12 @@ class LanguageForm(forms.ModelForm):
     class Meta:
         model = Language
         fields = ('language',)
+
+
+class SupportForm(forms.ModelForm):
+    UserText = forms.CharField(max_length=2000, label='Message', widget=forms.Textarea)
+    emailUser = forms.CharField(label='Email', max_length=100, widget=forms.EmailInput)
+
+    class Meta:
+        model = Support
+        fields = ('UserText', 'emailUser')

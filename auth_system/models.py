@@ -32,3 +32,9 @@ class Language(models.Model):
         verbose_name = "Language"
         verbose_name_plural = "Languages"
         ordering = ('language',)
+
+
+class Support(models.Model):
+    idSupport = models.AutoField(primary_key=True, verbose_name='Key')
+    emailUser = models.CharField(max_length=100, verbose_name='Email')
+    UserText = models.CharField(max_length=2000, verbose_name='Message')

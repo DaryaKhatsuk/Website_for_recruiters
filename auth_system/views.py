@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
+from django.views.i18n import set_language
 from django.core.mail import EmailMessage, get_connection
 from .models import AccountVerif, Language
 from site_for_HR.settings import EMAIL_ADMIN
@@ -91,13 +92,8 @@ def registration_view(request):
         if request.method == 'POST':
             user_form = RegistrationForm(data=request.POST)
             if user_form.is_valid():
-                # coun_users = 1
-                # for i in User.objects.values('email'):
-                    # только если coun_users будет равно количеству записей в базе и до этого не найдется запись
-                    # об искомом email, email будет зарегистрирован
-                    # if coun_users == len(User.objects.all()) and user_form.data.get('email') != i.get('email'):
                 print(user_form.cleaned_data)
-                User.objects.create_user(**user_form.cleaned_data)
+                user = User.objects.create_user(**user_form.cleaned_data)
                 # User.objects.create_user(username=user_form.cleaned_data.get('username'),
                 #                          name=user_form.cleaned_data.get('name'),
                 #                          email=user_form.cleaned_data.get('email'),
@@ -106,40 +102,26 @@ def registration_view(request):
                 #                          location=user_form.cleaned_data.get('location'),
                 #                          ConsentDataProcessing=user_form.cleaned_data.get('ConsentDataProcessing'),
                 #                          )
-                user = authenticate(username=user_form.cleaned_data.get('username'),
-                                    password=user_form.cleaned_data.get('password'),
+                user_auth = authenticate(username=user_form.cleaned_data.get('username'),
+                                         password=user_form.cleaned_data.get('password'),
+                                         )
+                login(request, user_auth)
+                # if user_form.cleaned_data.get('selecting') == 'S':
+                #     email_registration(user_email=user_form.cleaned_data.get('email'))
+                #     return redirect('homepage')
+                # else:
+                code = create_code()
+                verf = AccountVerif(recruiter=user,
+                                    code=code,
+                                    state_acc='U',
                                     )
-                login(request, user)
-                if user_form.cleaned_data.get('selecting') == 'S':
-                    email_registration(user_email=user_form.cleaned_data.get('email'))
-                    return redirect('homepage')
-                else:
-                    # with get_connection() as connection:
-                    code = create_code()
-                    verf = AccountVerif(recruiter=request.user.id,
-                                        code=code,
-                                        state_acc='U',
-                                        )
-                    verf.save()
-
-                    # EmailMessage(subject='Delete account', body=f"Dear user, your verification code: {code}"
-                    #                                             f"Happy using!",
-                    #              from_email=EMAIL_ADMIN, to=[user_form.cleaned_data.get('email')],
-                    #              connection=connection).send()
-                    # user = User.objects.get(id=request.user.id)
-                    email_registration(user_email=user_form.cleaned_data.get('email'), code=code)
-                    return redirect('account_verif')
-                        # elif user_form.data.get('email') == i.get('email'):
-                        #     return redirect('error_frame_registration')
-                        # coun_users += 1
-
+                verf.save()
+                email_registration(user_email=user_form.cleaned_data.get('email'), code=code)
+                return redirect('account_verif')
         context = {
             'form': RegistrationForm(),
         }
         return render(request, 'accounts/registration.html', context)
-    # except AttributeError as ae:
-    #     print(ae)
-    #     return redirect('error_frame_registration')
     except Exception as ex:
         print(ex)
         return redirect('error_frame')
@@ -150,10 +132,17 @@ def account_verif_view(request):
         if request.method == 'POST':
             user_form = AccountVerifForm(data=request.POST)
             if user_form.is_valid() and AccountVerif.code == user_form.cleaned_data.get('code'):
-                verf = AccountVerif(state_acc='A',
-                                    )
-                verf.save()
-                return redirect('homepage')
+                user = request.user
+                verification_code = user_form.cleaned_data['code']
+
+                # Check if the verification code matches the one in the database
+                try:
+                    account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code, state_acc='U')
+                    account_verif.state_acc = 'A'
+                    account_verif.save()
+                    return redirect('account')
+                except AccountVerif.DoesNotExist:
+                    user_form.add_error('code', 'Invalid verification code.')
         context = {
             'form': AccountVerifForm(),
         }
