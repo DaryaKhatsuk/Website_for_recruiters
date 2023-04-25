@@ -6,9 +6,9 @@ from django.views.i18n import set_language
 from django.core.mail import EmailMessage, get_connection
 from .models import AccountVerif, Language
 from site_for_HR.settings import EMAIL_ADMIN
-from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, AccountDelForm, LanguageForm
+from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, AccountDelForm, LanguageForm, SupportForm
 from .management.commands.password_generator import create_password, create_code
-from .management.commands.emails import email_registration
+from .management.commands.emails import email_registration, password_reset
 from datetime import date, datetime
 
 
@@ -24,62 +24,11 @@ def error_frame_view(request):
 
 
 def error_404(request, exception):
-    return render(request, 'base.html', status=404)
+    return render(request, 'errors/error_frame.html', status=404)
 
 
 def error_500(request):
-    return render(request, 'base.html', status=500)
-
-
-"""
-Password reset view
-"""
-
-
-# def password_reset_view(request):
-#     try:
-#         if request.method == "POST":
-#             user_form = ResetForm(data=request.POST)
-#             coun_users = 1
-#             user_chek = user_form.data.get  # сокращение для более удобного ввода в сравнение
-#             for i in User.objects.values('id', 'email', 'username', 'first_name'):
-#                 # сравнение email и username отправленные пользователем с базой
-#                 if user_chek('email') == i.get('email') and user_chek('username') == i.get('username'):
-#                     with get_connection() as connection:
-#                         new_password = create()
-#                         EmailMessage(subject='Reset password', body=f"Dear {i.get('first_name')}!\n"
-#                                                                     f"Your new password: {new_password}\n"
-#                                                                     f"Please write it down and delete this message.",
-#                                      from_email=FORM_EMAIL, to=[i.get('email')], connection=connection).send()
-#                         set_user = User.objects.get(username=user_chek('username'))
-#                         set_user.set_password(new_password)
-#                         set_user.save()
-#
-#                         print(f"Пользователь с id и username: {i.get('id'), user_chek('username')}, сменил пароль")
-#
-#                     return redirect('password_reset_done')
-#                 # только если coun_users будет равно количеству записей в базе и до этого не найдется запись,
-#                 # выходит экран ошибки
-#                 elif coun_users == len(User.objects.all()):
-#                     return redirect('error_frame')
-#                 coun_users += 1
-#         context = {
-#             'form': ResetForm(),
-#         }
-#         return render(request, 'accounts/password_reset/password_reset.html', context)
-#     except Exception as ex:
-#         print(ex)
-#         return redirect('error_frame')
-#
-#
-# def password_reset_done_view(request):
-#     try:
-#         context = {
-#         }
-#         return render(request, 'accounts/password_reset/password_reset_done.html', context)
-#     except Exception as ex:
-#         print(ex)
-#         return redirect('error_frame')
+    return render(request, 'errors/error_frame.html', status=500)
 
 
 """
@@ -94,6 +43,7 @@ def registration_view(request):
             if user_form.is_valid():
                 print(user_form.cleaned_data)
                 user = User.objects.create_user(**user_form.cleaned_data)
+                print(user)
                 # User.objects.create_user(username=user_form.cleaned_data.get('username'),
                 #                          name=user_form.cleaned_data.get('name'),
                 #                          email=user_form.cleaned_data.get('email'),
@@ -106,17 +56,13 @@ def registration_view(request):
                                          password=user_form.cleaned_data.get('password'),
                                          )
                 login(request, user_auth)
-                # if user_form.cleaned_data.get('selecting') == 'S':
-                #     email_registration(user_email=user_form.cleaned_data.get('email'))
-                #     return redirect('homepage')
-                # else:
                 code = create_code()
                 verf = AccountVerif(recruiter=user,
                                     code=code,
                                     state_acc='U',
                                     )
                 verf.save()
-                email_registration(user_email=user_form.cleaned_data.get('email'), code=code)
+                email_registration(user_email=user.email, code=code, username=user.username, name=user.name)
                 return redirect('account_verif')
         context = {
             'form': RegistrationForm(),
@@ -186,52 +132,89 @@ def logout_view(request):
 
 
 """
+Password reset view
+"""
+
+
+def password_reset_view(request):
+    try:
+        if request.method == "POST":
+            user_form = ResetForm(data=request.POST)
+            user_chek = user_form.data.get  # сокращение для более удобного ввода в сравнение
+            try:
+                user = User.objects.get(email=user_chek('email'), username=user_chek('username'))
+                print(user)
+                new_password = create_password()
+                user.password = new_password
+                user.save()
+                password_reset(new_password, user.name, user.email, user.username)
+                return redirect('password_reset_done')
+            except AccountVerif.DoesNotExist:
+                user_form.add_error('code', 'Invalid verification code.')
+        context = {
+            'form': ResetForm(),
+        }
+        return render(request, 'accounts/password_reset/password_reset.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+def password_reset_done_view(request):
+    try:
+        context = {
+        }
+        return render(request, 'accounts/password_reset/password_reset_done.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+"""
 Delete account
 """
 
 
-# def delete_account_view(request):
-#     try:
-#         if request.method == "POST":
-#             user_form = AccountDelForm(data=request.POST)
-#             if Purchase.objects.filter(currentCustomer=request.user.id):
-#                 return redirect('not_delete')
-#             else:
-#                 if user_form.is_valid() and user_form.data.get('email') == request.user.email:
-#                     with get_connection() as connection:
-#                         EmailMessage(subject='Delete account', body=f"Dear {request.user.first_name}, your account on "
-#                                                                     f"PlortShop.Zz as deleted.",
-#                                      from_email=FORM_EMAIL, to=[request.user.email], connection=connection).send()
-#                         user = User.objects.get(id=request.user.id)
-#                         user.delete()
-#                         return redirect('delete_account_done')
-#         context = {
-#             'form': AccountDelForm(),
-#         }
-#         return render(request, 'accounts/delete_account/delete_account.html', context)
-#     except Exception as ex:
-#         print(ex)
-#         return redirect('error_frame')
-#
-#
-# def delete_account_done_view(request):
-#     try:
-#         context = {
-#         }
-#         return render(request, 'accounts/delete_account/delete_account_done.html', context)
-#     except Exception as ex:
-#         print(ex)
-#         return redirect('error_frame')
-#
-#
-# def not_delete_view(request):
-#     try:
-#         context = {
-#         }
-#         return render(request, 'accounts/delete_account/not_delete.html', context)
-#     except Exception as ex:
-#         print(ex)
-#         return redirect('error_frame')
+def delete_account_view(request):
+    try:
+        if request.method == "POST":
+            user_form = AccountDelForm(data=request.POST)
+            if user_form.is_valid() and user_form.data.get('email') == request.user.email:
+                user = User.objects.get(id=request.user.id)
+                with get_connection() as connection:
+                    EmailMessage(subject='Delete account', body=f"Dear {user.name}, your account was deleted.",
+                                 from_email=EMAIL_ADMIN, to=[user.email], connection=connection).send()
+                user.delete()
+                return redirect('delete_account_done')
+            else:
+                return redirect('not_delete_acc')
+        context = {
+            'form': AccountDelForm(),
+        }
+        return render(request, 'accounts/delete_account/delete_account.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+def delete_account_done_view(request):
+    try:
+        context = {
+        }
+        return render(request, 'accounts/delete_account/delete_account_done.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+def not_delete_view(request):
+    try:
+        context = {
+        }
+        return render(request, 'accounts/delete_account/not_delete.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
 
 
 """
@@ -241,21 +224,19 @@ Support
 
 def support_view(request):
     try:
-        # if request.method == 'POST':
-        #     support_form = SupportForm(data=request.POST)
-        #     if support_form.is_valid():
-        #         supportBase = Support(emailUser=support_form.data.get('emailUser'),
-        #                               UserText=support_form.data.get('UserText'),
-        #                               )
-        #         supportBase.save()
-        #         print(supportBase.idSupport)
-        #         with get_connection() as connection:
-        #             EmailMessage(subject='Need support', body=f"Date: {date.today()}\n"
-        #                                                       f"Email: {support_form.data.get('emailUser')}\n"
-        #                                                       f"Message: {support_form.data.get('UserText')}",
-        #                          from_email=EMAIL_ADMIN, to=[EMAIL_ADMIN],
-        #                          connection=connection).send()
-        #             return redirect('support_done')
+        if request.method == 'POST':
+            support_form = SupportForm(data=request.POST)
+            if support_form.is_valid():
+                with get_connection() as connection:
+                    EmailMessage(subject='Need support for User', body=f"Date: {date.today()}\n"
+                                                                       f"Email: {support_form.data.get('emailUser')}\n"
+                                                                       f"Message: {support_form.data.get('UserText')}\n"
+                                                                       f"Request User: {request.user}\n"
+                                                                       f"Request COOKIES: {request.COOKIES}\n"
+                                                                       f"Request META: {request.META}\n",
+                                 from_email=EMAIL_ADMIN, to=[EMAIL_ADMIN],
+                                 connection=connection).send()
+                    return redirect('support_done')
         context = {
         }
         return render(request, 'support/support.html', context)
