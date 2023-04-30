@@ -12,6 +12,7 @@ from .forms import AppendLineForm, SelectionStageForm, SelectionForm, CommentsFo
 # from .management.commands.emails import email_registration_email, password_reset_email, delete_account_email, \
 #     support_email
 from datetime import date, datetime
+from site_for_HR.settings import DATETIME_LOCAL
 
 
 """
@@ -27,10 +28,10 @@ Errors
 #     return render(request, 'base.html', status=500)
 #
 #
-# def error_frame_view(request):
-#     context = {
-#     }
-#     return render(request, 'errors/error_frame.html', context)
+def error_frame_view(request):
+    context = {
+    }
+    return render(request, 'errors/error_frame.html', context)
 
 
 """
@@ -38,31 +39,31 @@ Technical: AppendLine, Comments, Currency
 """
 
 
-@login_required
-def append_line_create(request):
-    form = AppendLineForm(request.POST or None)
-    if form.is_valid():
-        append_line = form.save(commit=False)
-        append_line.recruiter = request.user
-        append_line.save()
-        return redirect('company_create')
-    context = {
-        'form': form,
-    }
-    return render(request, 'append_line_create.html', context)
-
-
-@login_required
-def comments_create(request):
-    form = CommentsForm(request.POST or None)
-    if form.is_valid():
-        comment = form.save(commit=False)
-        comment.save()
-        return redirect('company_create')
-    context = {
-        'form': form,
-    }
-    return render(request, 'comments_create.html', context)
+# @login_required
+# def append_line_create(request):
+#     form = AppendLineForm(request.POST or None)
+#     if form.is_valid():
+#         append_line = form.save(commit=False)
+#         append_line.recruiter = request.user
+#         append_line.save()
+#         return redirect('company_create')
+#     context = {
+#         'form': form,
+#     }
+#     return render(request, 'append_line_create.html', context)
+#
+#
+# @login_required
+# def comments_create(request):
+#     form = CommentsForm(request.POST or None)
+#     if form.is_valid():
+#         comment = form.save(commit=False)
+#         comment.save()
+#         return redirect('company_create')
+#     context = {
+#         'form': form,
+#     }
+#     return render(request, 'comments_create.html', context)
 
 
 """
@@ -71,13 +72,14 @@ Homepage, Notes, Note, Informs
 
 
 def homepage_view(request):
-    try:
-        context = {
-        }
-        return render(request, 'informs/homepage.html', context)
-    except Exception as ex:
-        print(ex)
-        return redirect('error_frame')
+    # try:
+    context = {
+        'date_local': DATETIME_LOCAL,
+    }
+    return render(request, 'informs/homepage.html', context)
+    # except Exception as ex:
+    #     print(ex)
+    #     return redirect('error_frame')
 
 
 def informs_view(request):
