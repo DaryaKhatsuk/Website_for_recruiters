@@ -11,23 +11,18 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
 <body>
-    <form method="post">
-        {% csrf_token %}
-
+    <div class="sect">
+        {% for note in  %}
             <table>
                 <tr>
-                    <td>{{ form.username.label_tag }}</td>
-                    <td>{{ form.username }}</td>
-                </tr>
-
-                <tr>
-                    <td>{{ form.password.label_tag }}</td>
-                    <td>{{ form.password }}</td>
-                </tr>
-                <tr>
-                    <td><input type="submit" value="Enter"></td>
+                    <td>{{ note }}</td>
                 </tr>
             </table>
-    </form>
+        {% empty %}
+            <div class="empty_base">
+                <h4>There are no notes</h4>
+            </div>
+        {% endfor %}
+    </div>
 </body>
 {% endblock %}

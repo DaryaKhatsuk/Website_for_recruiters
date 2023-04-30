@@ -1,14 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.i18n import set_language
 from django.core.mail import EmailMessage, get_connection
 from .models import AccountVerif, Language
-from site_for_HR.settings import EMAIL_ADMIN
 from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, AccountDelForm, LanguageForm, SupportForm
 from .management.commands.password_generator import create_password, create_code
-from .management.commands.emails import email_registration, password_reset
+from .management.commands.emails import email_registration_email, password_reset_email, delete_account_email, \
+    support_email
 from datetime import date, datetime
 
 
@@ -62,7 +63,7 @@ def registration_view(request):
                                     state_acc='U',
                                     )
                 verf.save()
-                email_registration(user_email=user.email, code=code, username=user.username, name=user.name)
+                email_registration_email(user_email=user.email, code=code, username=user.username, name=user.name)
                 return redirect('account_verif')
         context = {
             'form': RegistrationForm(),
@@ -73,6 +74,7 @@ def registration_view(request):
         return redirect('error_frame')
 
 
+@login_required
 def account_verif_view(request):
     try:
         if request.method == 'POST':
@@ -80,7 +82,6 @@ def account_verif_view(request):
             if user_form.is_valid() and AccountVerif.code == user_form.cleaned_data.get('code'):
                 user = request.user
                 verification_code = user_form.cleaned_data['code']
-
                 # Check if the verification code matches the one in the database
                 try:
                     account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code, state_acc='U')
@@ -110,12 +111,13 @@ def login_view(request):
             'user': request.user,
             'form': LoginForm(),
         }
-        return render(request, 'accounts/account.html', context)
+        return render(request, 'accounts/login.html', context)
     except Exception as ex:
         print(ex)
         return redirect('error_frame')
 
 
+@login_required
 def account_view(request):
     try:
         context = {
@@ -147,7 +149,7 @@ def password_reset_view(request):
                 new_password = create_password()
                 user.password = new_password
                 user.save()
-                password_reset(new_password, user.name, user.email, user.username)
+                password_reset_email(new_password, user.name, user.email, user.username)
                 return redirect('password_reset_done')
             except AccountVerif.DoesNotExist:
                 user_form.add_error('code', 'Invalid verification code.')
@@ -175,15 +177,14 @@ Delete account
 """
 
 
+@login_required
 def delete_account_view(request):
     try:
         if request.method == "POST":
             user_form = AccountDelForm(data=request.POST)
             if user_form.is_valid() and user_form.data.get('email') == request.user.email:
                 user = User.objects.get(id=request.user.id)
-                with get_connection() as connection:
-                    EmailMessage(subject='Delete account', body=f"Dear {user.name}, your account was deleted.",
-                                 from_email=EMAIL_ADMIN, to=[user.email], connection=connection).send()
+                delete_account_email(user_email=user.email, name=user.name)
                 user.delete()
                 return redirect('delete_account_done')
             else:
@@ -207,6 +208,7 @@ def delete_account_done_view(request):
         return redirect('error_frame')
 
 
+@login_required
 def not_delete_view(request):
     try:
         context = {
@@ -227,17 +229,11 @@ def support_view(request):
         if request.method == 'POST':
             support_form = SupportForm(data=request.POST)
             if support_form.is_valid():
-                with get_connection() as connection:
-                    EmailMessage(subject='Need support for User', body=f"Date: {date.today()}\n"
-                                                                       f"Email: {support_form.data.get('emailUser')}\n"
-                                                                       f"Message: {support_form.data.get('UserText')}\n"
-                                                                       f"Request User: {request.user}\n"
-                                                                       f"Request COOKIES: {request.COOKIES}\n"
-                                                                       f"Request META: {request.META}\n",
-                                 from_email=EMAIL_ADMIN, to=[EMAIL_ADMIN],
-                                 connection=connection).send()
-                    return redirect('support_done')
+                support_email(date.today(), support_form.data.get('emailUser'), support_form.data.get('UserText'),
+                              request.user, request.COOKIES, request.META)
+                return redirect('support_done')
         context = {
+            'form': SupportForm(),
         }
         return render(request, 'support/support.html', context)
     except Exception as ex:

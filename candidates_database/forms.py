@@ -1,6 +1,7 @@
 from django import forms
 
-from models import Notes, Company, Currency, Comments, Candidate, Vacancy, Emails, AppendLine, SelectionStage
+from .models import Notes, Company, Currency, Comments, Candidate, Vacancy, Emails, AppendLine, SelectionStage, \
+    Meetings, Selection
 
 
 class AppendLineForm(forms.ModelForm):
@@ -12,16 +13,21 @@ class AppendLineForm(forms.ModelForm):
 
 
 class SelectionStageForm(forms.ModelForm):
-    name = forms.CheckboxSelectMultiple(choices=('Candidate Selection', 'Screening interview', 'Test', 'Interview',
-                                                 'Offer', 'Accepted offer', 'Exit to work'))
+    status = forms.CheckboxSelectMultiple()
 
     class Meta:
         model = SelectionStage
-        fields = ('name',)
+        fields = ('status',)
+
+
+class SelectionForm(forms.ModelForm):
+    class Meta:
+        model = Selection
+        fields = ('candidate', 'vacancy', 'status', 'stages')
 
 
 class CommentsForm(forms.ModelForm):
-    comment = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
+    comment = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Comments
@@ -29,7 +35,7 @@ class CommentsForm(forms.ModelForm):
 
 
 class NotesForm(forms.ModelForm):
-    note = forms.CharField(max_length=1024, null=True, blank=True, widget=forms.Textarea)
+    note = forms.CharField(max_length=1024, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Notes
@@ -37,16 +43,16 @@ class NotesForm(forms.ModelForm):
 
 
 class CurrencyForm(forms.ModelForm):
-    choices_lang = forms.RadioSelect(choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
+    choices_currency = forms.RadioSelect(choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
 
     class Meta:
         model = Currency
-        fields = ('choices_lang',)
+        fields = ('choices_currency',)
 
 
 class CompanyForm(forms.ModelForm):
-    description = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
-    comments = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
+    description = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
+    comments = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Company
@@ -55,7 +61,7 @@ class CompanyForm(forms.ModelForm):
 
 class VacancyForm(forms.ModelForm):
     description = forms.CharField(max_length=1024, widget=forms.Textarea)
-    comments = forms.CharField(max_length=300, null=True, blank=True, widget=forms.Textarea)
+    comments = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Vacancy
@@ -64,25 +70,24 @@ class VacancyForm(forms.ModelForm):
 
 
 class EmailsForm(forms.ModelForm):
-    content = forms.CharField(max_length=1024, null=True, blank=True, widget=forms.Textarea)
+    content = forms.CharField(max_length=1024, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Emails
-        fields = ('sender', 'recipient', 'title', 'content', 'sent_at')
+        fields = ('sender', 'recipient', 'title', 'content')
 
 
 class CandidateForm(forms.ModelForm):
-    title = forms.CharField(max_length=50)
-    note = forms.CharField(max_length=1000, null=True, blank=True, widget=forms.Textarea)
+    position = forms.RadioSelect()
 
     class Meta:
         model = Candidate
-        fields = ('title', 'note')
+        fields = ('full_name', 'position', 'email', 'phone', 'desired_salary', 'currency', 'location', 'resume_file',
+                  'applied_vacancy', 'status', 'interview_date', 'experience', 'cover_letter', 'source',
+                  'message', 'sun_emails', 'comments', 'append_line')
 
-# class SupportForm(forms.ModelForm):
-#     UserText = forms.CharField(max_length=2000, label='Message', widget=forms.Textarea)
-#     emailUser = forms.CharField(label='Email', max_length=100, widget=forms.EmailInput)
-#
-#     class Meta:
-#         model = Support
-#         fields = ('UserText', 'emailUser')
+
+class MeetingsForm(forms.ModelForm):
+    class Meta:
+        model = Meetings
+        fields = ('title', 'date', 'location', 'attendees', 'participant', 'append_line')

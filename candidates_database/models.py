@@ -39,16 +39,16 @@ class Company(models.Model):
 
 
 class Currency(models.Model):
-    choices_lang = models.CharField(max_length=4, choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
-                                                           ('R', 'RUB'), ('P', 'PLN')))
+    choices_currency = models.CharField(max_length=4, choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
+                                                               ('R', 'RUB'), ('P', 'PLN')))
 
     def __str__(self):
-        return f'{self.choices_lang}'
+        return f'{self.choices_currency}'
 
     class Meta:
         verbose_name = "Currency"
         verbose_name_plural = "Currency's"
-        ordering = ('choices_lang',)
+        ordering = ('choices_currency',)
 
 
 class Vacancy(models.Model):
@@ -68,7 +68,7 @@ class Vacancy(models.Model):
     class Meta:
         verbose_name = "Vacancy"
         verbose_name_plural = "Vacancy's"
-        ordering = ('title',)
+        ordering = ('title', 'company', 'location')
 
 
 class Emails(models.Model):
@@ -90,14 +90,14 @@ class Emails(models.Model):
 
 class Candidate(models.Model):
     full_name = models.CharField(max_length=200)
+    position = models.CharField(max_length=200)
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     desired_salary = models.IntegerField(null=True, blank=True)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
     location = models.CharField(max_length=100, blank=True)
     resume_file = models.FileField(upload_to='resumes/')
-    referred_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
-                                    related_name='candidates_referred')
+    referred_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     applied_vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=50)
     interview_date = models.DateTimeField(null=True, blank=True)
@@ -116,7 +116,7 @@ class Candidate(models.Model):
     class Meta:
         verbose_name = "Candidate"
         verbose_name_plural = "Candidates"
-        ordering = ('full_name', 'status', 'experience')
+        ordering = ('full_name', 'status', 'experience', 'position', 'location')
 
 
 class Meetings(models.Model):
@@ -153,6 +153,7 @@ class Notes(models.Model):
 
 class SelectionStage(models.Model):
     status = models.CharField(max_length=30, choices=(('CS', 'Candidate Selection'), ('SI', 'Screening interview'),
+                                                      ('I', 'Interview'), ('TI', 'Technical interview'),
                                                       ('O', 'Offer'), ('AO', 'Accepted offer'),
                                                       ('EtW', 'Exit to work')))
 
