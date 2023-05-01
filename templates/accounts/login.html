@@ -13,10 +13,9 @@
 <body>
     <form method="post">
         {% csrf_token %}
-
             <table>
                 <tr>
-                    <td>{{ form.username.label_tag }}</td>
+                    <td>Username:</td>
                     <td>{{ form.username }}</td>
                 </tr>
 

@@ -67,3 +67,29 @@ class FormsTest(TestCase):
                      'salary_min': 1000, 'salary_max': 2000, 'currency': currency.pk, 'location': 'Test Location'}
         form = VacancyForm(data=form_data)
         self.assertTrue(form.is_valid())
+
+class VacancyModelTestCase(TestCase):
+    def setUp(self):
+        self.vacancy = Vacancy.objects.create(
+            title='Software Developer',
+            company='Acme Inc',
+            description='We are looking for a software developer to join our team',
+            salary_min=50000,
+            salary_max=70000,
+            currency='USD',
+            location='New York',
+            comments='Test comment',
+            append_line='Test append line'
+        )
+
+    def test_vacancy_str(self):
+        self.assertEqual(str(self.vacancy), 'Software Developer')
+
+    def test_vacancy_verbose_name(self):
+        self.assertEqual(Vacancy._meta.verbose_name, 'Vacancy')
+
+    def test_vacancy_verbose_name_plural(self):
+        self.assertEqual(Vacancy._meta.verbose_name_plural, "Vacancies")
+
+    def test_vacancy_ordering(self):
+        self.assertEqual(Vacancy._meta.ordering, ('title', 'company', 'location'))

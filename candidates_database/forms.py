@@ -13,14 +13,15 @@ class AppendLineForm(forms.ModelForm):
 
 
 class SelectionStageForm(forms.ModelForm):
-    status = forms.CheckboxSelectMultiple()
-
     class Meta:
         model = SelectionStage
         fields = ('status',)
 
 
 class SelectionForm(forms.ModelForm):
+    stages = forms.ModelMultipleChoiceField(queryset=SelectionStage.objects.all(),
+                                            widget=forms.CheckboxSelectMultiple)
+
     class Meta:
         model = Selection
         fields = ('candidate', 'vacancy', 'status', 'stages')
@@ -78,7 +79,7 @@ class EmailsForm(forms.ModelForm):
 
 
 class CandidateForm(forms.ModelForm):
-    position = forms.RadioSelect()
+    position = forms.CharField(max_length=200)
 
     class Meta:
         model = Candidate

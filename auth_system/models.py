@@ -3,6 +3,11 @@ from django.db import models
 from filebrowser.fields import FileBrowseField
 
 
+class SettingsUser(models.Model):
+    selecting = models.CharField(max_length=10, choices=(('D', 'On device'), ('S', 'On server')))
+    ConsentDataProcessing = models.CharField(max_length=10, choices=((True, 'Yes'), (False, 'No')))
+
+
 class AccountVerif(models.Model):
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=10)

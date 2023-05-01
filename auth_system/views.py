@@ -5,13 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.i18n import set_language
 from django.core.mail import EmailMessage, get_connection
-from .models import AccountVerif, Language
-from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, AccountDelForm, LanguageForm, SupportForm
+from .models import AccountVerif, Language, SettingsUser
+from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, AccountDelForm, LanguageForm, SupportForm, \
+    SettingsUserForm
 from .management.commands.password_generator import create_password, create_code
 from .management.commands.emails import email_registration_email, password_reset_email, delete_account_email, \
     support_email
 from datetime import date, datetime
-
 
 """
 Errors
@@ -41,32 +41,35 @@ def registration_view(request):
     try:
         if request.method == 'POST':
             user_form = RegistrationForm(data=request.POST)
+            print(user_form.data.__str__())
+            print(user_form.errors)
+            print(user_form.is_valid())
             if user_form.is_valid():
                 print(user_form.cleaned_data)
-                user = User.objects.create_user(**user_form.cleaned_data)
-                print(user)
-                # User.objects.create_user(username=user_form.cleaned_data.get('username'),
-                #                          name=user_form.cleaned_data.get('name'),
-                #                          email=user_form.cleaned_data.get('email'),
-                #                          password=user_form.cleaned_data.get('password'),
-                #                          selecting=user_form.cleaned_data.get('selecting'),
-                #                          location=user_form.cleaned_data.get('location'),
-                #                          ConsentDataProcessing=user_form.cleaned_data.get('ConsentDataProcessing'),
-                #                          )
-                user_auth = authenticate(username=user_form.cleaned_data.get('username'),
-                                         password=user_form.cleaned_data.get('password'),
-                                         )
-                login(request, user_auth)
-                code = create_code()
-                verf = AccountVerif(recruiter=user,
-                                    code=code,
-                                    state_acc='U',
-                                    )
-                verf.save()
-                email_registration_email(user_email=user.email, code=code, username=user.username, name=user.name)
-                return redirect('account_verif')
+                username_base = User.objects.filter(username=user_form.cleaned_data.get('username')).exists()
+                email_base = User.objects.filter(email=user_form.cleaned_data.get('email')).exists()
+                if username_base is False and email_base is False:
+                    user = User.objects.create_user(username=user_form.cleaned_data.get('username'),
+                                                    first_name=user_form.cleaned_data.get('first_name'),
+                                                    last_name=user_form.cleaned_data.get('last_name'),
+                                                    email=user_form.cleaned_data.get('email'),
+                                                    password=user_form.cleaned_data.get('password'),
+                                                    )
+                    print(user)
+                    user_auth = authenticate(username=user.username,
+                                             password=user.password,
+                                             )
+                    login(request, user_auth)
+                    code = create_code()
+                    verf = AccountVerif(recruiter=user,
+                                        code=code,
+                                        state_acc='U',
+                                        )
+                    verf.save()
+                    email_registration_email(user_email=user.email, code=code, username=user.username, name=user.name)
+                    return redirect('account_verif')
         context = {
-            'form': RegistrationForm(),
+            'form_registration': RegistrationForm(),
         }
         return render(request, 'accounts/registration.html', context)
     except Exception as ex:

@@ -18,40 +18,30 @@
             {% csrf_token %}
             <table>
                     <tr>
-                        <td>{{ form.username.label_tag }}</td>
-                        <td>{{ form.username }}</td>
+                        <td>{{ form_registration.username.label_tag }}</td>
+                        <td>{{ form_registration.username }}</td>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td>{{ form.username.help_text }}</td>
+                        <td colspan="2">{{ form_registration.username.help_text }}</td>
                     </tr>
                     <tr>
-                        <td>{{ form.name.label_tag }}</td>
-                        <td>{{ form.name }}</td>
+                        <td>{{ form_registration.first_name.label_tag }}</td>
+                        <td>{{ form_registration.first_name }}</td>
                     </tr>
                     <tr>
-                        <td>{{ form.email.label_tag }}</td>
-                        <td>{{ form.email }}</td>
+                        <td>{{ form_registration.last_name.label_tag }}</td>
+                        <td>{{ form_registration.last_name }}</td>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td>{{ form.email.help_text }}</td>
+                        <td>{{ form_registration.email.label_tag }}</td>
+                        <td>{{ form_registration.email }}</td>
                     </tr>
                     <tr>
-                        <td>{{ form.password.label_tag }}</td>
-                        <td>{{ form.password }}</td>
+                        <td colspan="2">{{ form_registration.email.help_text }}</td>
                     </tr>
                     <tr>
-                        <td>{{ form.selecting.label_tag }}</td>
-                        <td>{{ form.selecting }}</td>
-                    </tr>
-                    <tr>
-                        <td>{{ form.location.label_tag }}</td>
-                        <td>{{ form.location }}</td>
-                    </tr>
-                    <tr>
-                        <td>{{ form.ConsentDataProcessing.label_tag }}</td>
-                        <td>{{ form.ConsentDataProcessing }}</td>
+                        <td>{{ form_registration.password.label_tag }}</td>
+                        <td>{{ form_registration.password }}</td>
                     </tr>
                 </table>
             <input type="submit" value="Registration">

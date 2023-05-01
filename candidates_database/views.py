@@ -72,14 +72,14 @@ Homepage, Notes, Note, Informs
 
 
 def homepage_view(request):
-    # try:
-    context = {
-        'date_local': DATETIME_LOCAL,
-    }
-    return render(request, 'informs/homepage.html', context)
-    # except Exception as ex:
-    #     print(ex)
-    #     return redirect('error_frame')
+    try:
+        context = {
+            'date_local': DATETIME_LOCAL,
+        }
+        return render(request, 'informs/homepage.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
 
 
 def informs_view(request):
@@ -96,7 +96,7 @@ def informs_view(request):
 def notes_view(request):
     try:
         context = {
-            'notes': Notes.objects.filter(recruiter=request.user),
+            'notes': Notes.objects.filter(recruiter=request.user).order_by('-datatime_update'),
         }
         return render(request, 'notes/notes.html', context)
     except Exception as ex:
@@ -119,6 +119,39 @@ def note_view(request, id_note):
 @login_required
 def note_form_view(request):
     try:
+        if request.method == 'POST':
+            form = NotesForm(request.POST)
+            if form.is_valid():
+                note = form.save(commit=False)
+                note.recruiter = request.user
+                note.datatime_create = DATETIME_LOCAL
+                note.datatime_update = DATETIME_LOCAL
+                note.save()
+                return redirect('note', vacancy_id=note.id)
+        else:
+            form = VacancyForm()
+        context = {
+            'form': NotesForm(),
+        }
+        return render(request, 'notes/notes.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+@login_required
+def note_update_view(request, id_note):
+    try:
+        note = get_object_or_404(Notes, id=id_note, recruiter=request.user)
+        if request.method == 'POST':
+            form = NotesForm(request.POST, instance=note)
+            if form.is_valid():
+                note = form.save(commit=False)
+                note.datatime_update = DATETIME_LOCAL
+                note.save()
+                return redirect('note', id=note.id)
+        else:
+            form = VacancyForm(instance=note)
         context = {
             'form': NotesForm(),
         }
@@ -137,7 +170,7 @@ Companies, Company, Form
 def companies_view(request):
     try:
         context = {
-            'companies': Company.objects.filter(recruiter=request.user),
+            'companies': Company.objects.filter(recruiter=request.user).order_by('-datatime_update'),
         }
         return render(request, 'companies/companies_list.html', context)
     except Exception as ex:
@@ -177,8 +210,9 @@ Vacancies, Vacancy, Form
 @login_required
 def vacancies_view(request):
     try:
+        vacancies = Vacancy.objects.filter(recruiter=request.user).order_by('-datatime_update')
         context = {
-            'vacancies': Vacancy.objects.filter(recruiter=request.user),
+            'vacancies': vacancies,
         }
         return render(request, 'vacancies/vacancies_list.html', context)
     except Exception as ex:
@@ -189,10 +223,12 @@ def vacancies_view(request):
 @login_required
 def vacancy_view(request, id_vacancy):
     try:
-        vacancy = Vacancy.objects.filter(id=id_vacancy, comments=request.user)
+        vacancy = Vacancy.objects.filter(id=id_vacancy, recruiter=request.user)
+        candidates = Candidate.objects.filter(vacancy=vacancy).order_by('-datatime_update')
         context = {
             'vacancy': vacancy,
-            'selection': Selection.objects.filter(vacancy=vacancy)
+            'candidates': candidates,
+            'selection': Selection.objects.filter(vacancy=vacancy),
         }
         return render(request, 'vacancies/vacancy_card.html', context)
     except Exception as ex:
@@ -201,10 +237,43 @@ def vacancy_view(request, id_vacancy):
 
 
 @login_required
-def vacancy_view(request):
+def vacancy_form_view(request):
     try:
+        if request.method == 'POST':
+            form = VacancyForm(request.POST)
+            if form.is_valid():
+                vacancy = form.save(commit=False)
+                vacancy.recruiter = request.user
+                vacancy.datatime_create = DATETIME_LOCAL
+                vacancy.datatime_update = DATETIME_LOCAL
+                vacancy.save()
+                return redirect('vacancy_card', vacancy_id=vacancy.id)
+        else:
+            form = VacancyForm()
         context = {
             'form': VacancyForm(),
+        }
+        return render(request, 'vacancies/vacancy_form.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+@login_required
+def vacancy_update(request, vacancy_id):
+    try:
+        vacancy = get_object_or_404(Vacancy, id=vacancy_id, recruiter=request.user)
+        if request.method == 'POST':
+            form = VacancyForm(request.POST, instance=vacancy)
+            if form.is_valid():
+                vacancy = form.save(commit=False)
+                vacancy.datatime_update = DATETIME_LOCAL
+                vacancy.save()
+                return redirect('vacancy_card', vacancy_id=vacancy.id)
+        else:
+            form = VacancyForm(instance=vacancy)
+        context = {
+            'form': form,
         }
         return render(request, 'vacancies/vacancy_form.html', context)
     except Exception as ex:
@@ -221,7 +290,7 @@ Emails, Email, Form
 def emails_view(request):
     try:
         context = {
-            'emails': Emails.objects.filter(recruiter=request.user),
+            'emails': Emails.objects.filter(recruiter=request.user).order_by('-datatime_update'),
         }
         return render(request, 'messages/emails_list.html', context)
     except Exception as ex:
@@ -262,7 +331,7 @@ Candidates, Candidate, Form
 def candidates_view(request):
     try:
         context = {
-            'candidates': Candidate.objects.filter(recruiter=request.user),
+            'candidates': Candidate.objects.filter(referred_by=request.user).order_by('-datatime_update'),
         }
         return render(request, 'candidates/candidates_list.html', context)
     except Exception as ex:
@@ -283,12 +352,51 @@ def candidate_view(request, id_candidate):
 
 
 @login_required
-def candidate_form_view(request):
+def candidate_form_view(request, vacancy_id):
     try:
+        vacancy = Vacancy.objects.get(id=vacancy_id, recruiter=request.user)
+        if request.method == 'POST':
+            form = CandidateForm(request.POST)
+            if form.is_valid():
+                candidate = form.save(commit=False)
+                candidate.vacancy = vacancy
+                candidate.datatime_create = DATETIME_LOCAL
+                candidate.datatime_update = DATETIME_LOCAL
+                candidate.save()
+                return redirect('vacancy_detail', vacancy_id=vacancy.id)
+        else:
+            form = CandidateForm()
         context = {
             'form': CandidateForm(),
+            'vacancy': vacancy
         }
         return render(request, 'candidates/candidate_form.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+@login_required
+def candidate_update(request, vacancy_id, candidate_id):
+    try:
+        vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+        candidate = get_object_or_404(Candidate, id=candidate_id, vacancy=vacancy)
+        if request.method == 'POST':
+            form = CandidateForm(request.POST, instance=candidate)
+            if form.is_valid():
+                candidate = form.save(commit=False)
+                candidate.vacancy = vacancy
+                candidate.datatime_update = DATETIME_LOCAL
+                candidate.save()
+                return redirect('vacancy_detail', vacancy_id=vacancy.id)
+        else:
+            form = CandidateForm(instance=candidate)
+        context = {
+            'vacancy': vacancy,
+            'form': form,
+            'action': 'Update',
+        }
+        return render(request, 'candidates/candidate_update.html', context)
     except Exception as ex:
         print(ex)
         return redirect('error_frame')
@@ -303,7 +411,7 @@ Planning: Meetings, Meeting, Schedule
 def meetings_view(request):
     try:
         context = {
-            'meetings': Meetings.objects.filter(recruiter=request.user),
+            'meetings': Meetings.objects.filter(recruiter=request.user).order_by('-datatime_update'),
         }
         return render(request, '', context)
     except Exception as ex:
