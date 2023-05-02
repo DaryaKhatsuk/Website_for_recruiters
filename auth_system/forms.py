@@ -44,8 +44,8 @@ class AccountVerifForm(forms.ModelForm):
         return cleaned_data
 
     class Meta:
-        model = AccountDirectory
-        fields = ('directory',)
+        model = AccountVerif
+        fields = ('code',)
 
 
 class LoginForm(forms.ModelForm):

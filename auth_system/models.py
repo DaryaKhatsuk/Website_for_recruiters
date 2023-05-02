@@ -12,6 +12,7 @@ class AccountVerif(models.Model):
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=10)
     state_acc = models.CharField(max_length=12, choices=(('A', 'Active'), ('U', 'Unverified'), ('B', 'Blocked')))
+    datatime_finished = models.DateTimeField()
 
     class Meta:
         verbose_name = "AccountVerif"

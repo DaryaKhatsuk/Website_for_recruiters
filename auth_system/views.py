@@ -11,7 +11,8 @@ from .forms import RegistrationForm, AccountVerifForm, LoginForm, ResetForm, Acc
 from .management.commands.password_generator import create_password, create_code
 from .management.commands.emails import email_registration_email, password_reset_email, delete_account_email, \
     support_email
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from site_for_HR.settings import DATETIME_LOCAL
 
 """
 Errors
@@ -43,7 +44,6 @@ def registration_view(request):
             user_form = RegistrationForm(data=request.POST)
             print(user_form.data.__str__())
             print(user_form.errors)
-            print(user_form.is_valid())
             if user_form.is_valid():
                 print(user_form.cleaned_data)
                 username_base = User.objects.filter(username=user_form.cleaned_data.get('username')).exists()
@@ -56,17 +56,20 @@ def registration_view(request):
                                                     password=user_form.cleaned_data.get('password'),
                                                     )
                     print(user)
-                    user_auth = authenticate(username=user.username,
-                                             password=user.password,
+                    user_auth = authenticate(username=user_form.cleaned_data.get('username'),
+                                             password=user_form.cleaned_data.get('password'),
                                              )
                     login(request, user_auth)
                     code = create_code()
                     verf = AccountVerif(recruiter=user,
                                         code=code,
                                         state_acc='U',
+                                        datatime_finished=DATETIME_LOCAL.now() + timedelta(days=1),
                                         )
+                    print(verf)
                     verf.save()
-                    email_registration_email(user_email=user.email, code=code, username=user.username, name=user.name)
+                    email_registration_email(user_email=user.email, code=code, username=user.username,
+                                             name=f'{user.first_name, user.last_name}')
                     return redirect('account_verif')
         context = {
             'form_registration': RegistrationForm(),
@@ -82,17 +85,23 @@ def account_verif_view(request):
     try:
         if request.method == 'POST':
             user_form = AccountVerifForm(data=request.POST)
-            if user_form.is_valid() and AccountVerif.code == user_form.cleaned_data.get('code'):
-                user = request.user
-                verification_code = user_form.cleaned_data['code']
-                # Check if the verification code matches the one in the database
-                try:
-                    account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code, state_acc='U')
-                    account_verif.state_acc = 'A'
-                    account_verif.save()
-                    return redirect('account')
-                except AccountVerif.DoesNotExist:
-                    user_form.add_error('code', 'Invalid verification code.')
+            print(user_form.data.__str__())
+            print(user_form.errors)
+            user = request.user
+            verification_code = user_form.cleaned_data['code']
+            # Check if the verification code matches the one in the database
+            try:
+                account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code,
+                                                         state_acc='U')
+                # print(DATETIME_LOCAL)
+                # print(account_verif.datatime_finished)
+                # date_l = DATETIME_LOCAL.astimezone()
+                # if date_l < account_verif.datatime_finished():
+                account_verif.state_acc = 'A'
+                account_verif.save()
+                return redirect('account')
+            except AccountVerif.DoesNotExist:
+                user_form.add_error('code', 'Invalid verification code.')
         context = {
             'form': AccountVerifForm(),
         }
@@ -106,6 +115,8 @@ def login_view(request):
     try:
         if request.method == "POST":
             user_form = RegistrationForm(data=request.POST)
+            print(user_form.data.__str__())
+            print(user_form.errors)
             user = authenticate(username=user_form.data.get('username'),
                                 password=user_form.data.get('password'))
             login(request, user)
@@ -152,7 +163,7 @@ def password_reset_view(request):
                 new_password = create_password()
                 user.password = new_password
                 user.save()
-                password_reset_email(new_password, user.name, user.email, user.username)
+                password_reset_email(new_password, user.first_name, user.email, user.username)
                 return redirect('password_reset_done')
             except AccountVerif.DoesNotExist:
                 user_form.add_error('code', 'Invalid verification code.')
@@ -187,7 +198,7 @@ def delete_account_view(request):
             user_form = AccountDelForm(data=request.POST)
             if user_form.is_valid() and user_form.data.get('email') == request.user.email:
                 user = User.objects.get(id=request.user.id)
-                delete_account_email(user_email=user.email, name=user.name)
+                delete_account_email(user_email=user.email, name=user.first_name)
                 user.delete()
                 return redirect('delete_account_done')
             else:

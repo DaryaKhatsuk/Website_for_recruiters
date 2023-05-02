@@ -129,7 +129,7 @@ def note_form_view(request):
                 note.save()
                 return redirect('note', vacancy_id=note.id)
         else:
-            form = VacancyForm()
+            form = NotesForm()
         context = {
             'form': NotesForm(),
         }
@@ -151,7 +151,7 @@ def note_update_view(request, id_note):
                 note.save()
                 return redirect('note', id=note.id)
         else:
-            form = VacancyForm(instance=note)
+            form = NotesForm(instance=note)
         context = {
             'form': NotesForm(),
         }
@@ -193,6 +193,39 @@ def company_view(request, id_company):
 @login_required
 def company_form_view(request):
     try:
+        if request.method == 'POST':
+            form = CompanyForm(request.POST)
+            if form.is_valid():
+                company = form.save(commit=False)
+                company.recruiter = request.user
+                company.datatime_create = DATETIME_LOCAL
+                company.datatime_update = DATETIME_LOCAL
+                company.save()
+                return redirect('company', vacancy_id=company.id)
+        else:
+            form = CompanyForm()
+        context = {
+            'form': CompanyForm(),
+        }
+        return render(request, 'companies/company_form.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
+
+
+@login_required
+def company_update_view(request, id_company):
+    try:
+        company = get_object_or_404(Company, id=id_company, recruiter=request.user)
+        if request.method == 'POST':
+            form = NotesForm(request.POST, instance=company)
+            if form.is_valid():
+                company = form.save(commit=False)
+                company.datatime_update = DATETIME_LOCAL
+                company.save()
+                return redirect('company', id=company.id)
+        else:
+            form = CompanyForm(instance=company)
         context = {
             'form': CompanyForm(),
         }

@@ -1,6 +1,6 @@
 from django.urls import path
 from django.conf.urls import handler404, handler500
-from .views import homepage_view, notes_view, note_view, informs_view, companies_view, company_view, \
+from .views import homepage_view, notes_view, note_view, note_form_view, note_update_view, informs_view, companies_view, company_view, \
     company_form_view, vacancies_view, vacancy_view, vacancy_form_view, vacancy_update, emails_view, email_view, \
     email_form_view, candidates_view, candidate_view, \
     candidate_form_view, candidate_update, \
@@ -11,7 +11,9 @@ urlpatterns = [
     path('informs/', informs_view, name='informs'),
 
     path('notes/', notes_view, name='notes'),
-    path('note/', note_view, name='note'),
+    path('notes/note/', note_view, name='note'),
+    path('notes/note_create/', note_form_view, name='note_form'),
+    path('note/note_update/', note_update_view, name='note_update'),
 
     path('companies/', companies_view, name='companies'),
     path('companies/company/', company_view, name='company'),
