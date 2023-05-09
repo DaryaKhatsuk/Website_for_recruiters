@@ -7,8 +7,8 @@ class RegistrationForm(forms.ModelForm):
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
     username = forms.CharField(label='Username', help_text='The username must be unique and contain no spaces',
                                max_length=50)
-    first_name = forms.CharField(label='First Name', max_length=50)
-    last_name = forms.CharField(label='Last Name', max_length=50)
+    first_name = forms.CharField(label='First name', max_length=50)
+    last_name = forms.CharField(label='Last name', max_length=50)
     email = forms.CharField(label='Email', max_length=255, widget=forms.EmailInput,
                             help_text='Please use a valid email address so that you can be contacted')
 
@@ -49,11 +49,12 @@ class AccountVerifForm(forms.ModelForm):
 
 
 class LoginForm(forms.ModelForm):
+    username = forms.CharField(max_length=50, label='Username')
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('username',)
+        fields = ('username', 'password')
 
 
 class ResetForm(forms.ModelForm):

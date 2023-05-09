@@ -8,21 +8,34 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sections.css' %}">
 </head>
 <body>
     <div class="sect">
-        {% for candidate in candidates %}
-            <table>
-                <tr>
-                    <td>{{ candidate }}</td>
-                </tr>
-            </table>
-        {% empty %}
-            <div class="empty_base">
-                <h4>There are no notes</h4>
-            </div>
-        {% endfor %}
+        <table class="outer">
+            <tr>
+                <td>
+                    <tr class="selectmenu">
+                        <td><a href="{% url 'candidate_form' %}">New candidate</a></td>
+                    </tr>
+                </td>
+                <td>
+                    {% for candidate in candidates %}
+                        <tr class="content">
+                            <td>{{ candidate }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr class="content">
+                            <td>
+                                <div class="empty_base">
+                                    <h4>There are no candidates</h4>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 {% endblock %}

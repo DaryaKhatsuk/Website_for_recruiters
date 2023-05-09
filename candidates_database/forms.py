@@ -1,15 +1,7 @@
 from django import forms
 
-from .models import Notes, Company, Currency, Comments, Candidate, Vacancy, Emails, AppendLine, SelectionStage, \
+from .models import Notes, Company, Currency, Candidate, Vacancy, Emails, SelectionStage, \
     Meetings, Selection
-
-
-class AppendLineForm(forms.ModelForm):
-    name_line = forms.CharField(max_length=50, label='Name line')
-
-    class Meta:
-        model = AppendLine
-        fields = ('name_line', 'line')
 
 
 class SelectionStageForm(forms.ModelForm):
@@ -27,14 +19,6 @@ class SelectionForm(forms.ModelForm):
         fields = ('candidate', 'vacancy', 'status', 'stages')
 
 
-class CommentsForm(forms.ModelForm):
-    comment = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
-
-    class Meta:
-        model = Comments
-        fields = ('comment',)
-
-
 class NotesForm(forms.ModelForm):
     note = forms.CharField(max_length=1024, required=False, widget=forms.Textarea)
 
@@ -44,7 +28,8 @@ class NotesForm(forms.ModelForm):
 
 
 class CurrencyForm(forms.ModelForm):
-    choices_currency = forms.RadioSelect(choices=('USD', 'EUR', 'BYR', 'UAH', 'RUB', 'PLN'))
+    choices_currency = forms.TypedChoiceField(choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
+                                                       ('R', 'RUB'), ('P', 'PLN')))
 
     class Meta:
         model = Currency
@@ -57,17 +42,18 @@ class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
-        fields = ('name', 'website', 'description', 'industry', 'comments', 'append_line')
+        fields = ('name', 'website', 'description', 'industry', 'comments')
 
 
 class VacancyForm(forms.ModelForm):
     description = forms.CharField(max_length=1024, widget=forms.Textarea)
     comments = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
+    currency = forms.TypedChoiceField(choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
+                                               ('R', 'RUB'), ('P', 'PLN')))
 
     class Meta:
         model = Vacancy
-        fields = ('title', 'company', 'description', 'salary_min', 'salary_max', 'currency', 'location', 'comments',
-                  'append_line')
+        fields = ('title', 'company', 'description', 'salary_min', 'salary_max', 'currency', 'location', 'comments')
 
 
 class EmailsForm(forms.ModelForm):
@@ -75,20 +61,21 @@ class EmailsForm(forms.ModelForm):
 
     class Meta:
         model = Emails
-        fields = ('sender', 'recipient', 'title', 'content')
+        fields = ('recipient', 'title', 'content')
 
 
 class CandidateForm(forms.ModelForm):
     position = forms.CharField(max_length=200)
+    comments = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
+    cover_letter = forms.CharField(max_length=1000, required=False, widget=forms.Textarea)
 
     class Meta:
         model = Candidate
         fields = ('full_name', 'position', 'email', 'phone', 'desired_salary', 'currency', 'location', 'resume_file',
-                  'applied_vacancy', 'status', 'interview_date', 'experience', 'cover_letter', 'source',
-                  'message', 'sun_emails', 'comments', 'append_line')
+                  'applied_vacancy', 'status', 'experience', 'cover_letter', 'source', 'comments')
 
 
 class MeetingsForm(forms.ModelForm):
     class Meta:
         model = Meetings
-        fields = ('title', 'date', 'location', 'attendees', 'participant', 'append_line')
+        fields = ('title', 'date', 'location', 'attendees', 'participant')

@@ -49,27 +49,30 @@ def registration_view(request):
                 username_base = User.objects.filter(username=user_form.cleaned_data.get('username')).exists()
                 email_base = User.objects.filter(email=user_form.cleaned_data.get('email')).exists()
                 if username_base is False and email_base is False:
-                    user = User.objects.create_user(username=user_form.cleaned_data.get('username'),
-                                                    first_name=user_form.cleaned_data.get('first_name'),
-                                                    last_name=user_form.cleaned_data.get('last_name'),
-                                                    email=user_form.cleaned_data.get('email'),
-                                                    password=user_form.cleaned_data.get('password'),
-                                                    )
-                    print(user)
-                    user_auth = authenticate(username=user_form.cleaned_data.get('username'),
-                                             password=user_form.cleaned_data.get('password'),
+                    User.objects.create_user(username=user_form.cleaned_data.get('username'),
+                                             first_name=user_form.cleaned_data.get('first_name'),
+                                             last_name=user_form.cleaned_data.get('last_name'),
+                                             email=user_form.cleaned_data.get('email'),
+                                             password=user_form.cleaned_data.get('password')
                                              )
-                    login(request, user_auth)
+                    user = authenticate(username=user_form.cleaned_data.get('username'),
+                                        first_name=user_form.cleaned_data.get('first_name'),
+                                        last_name=user_form.cleaned_data.get('last_name'),
+                                        email=user_form.cleaned_data.get('email'),
+                                        password=user_form.cleaned_data.get('password')
+                                        )
+                    print(user)
                     code = create_code()
                     verf = AccountVerif(recruiter=user,
                                         code=code,
                                         state_acc='U',
-                                        datatime_finished=DATETIME_LOCAL.now() + timedelta(days=1),
+                                        datatime_finished=DATETIME_LOCAL + timedelta(days=1),
                                         )
                     print(verf)
                     verf.save()
                     email_registration_email(user_email=user.email, code=code, username=user.username,
-                                             name=f'{user.first_name, user.last_name}')
+                                             name=f'{str(user.first_name)} {str(user.last_name)}')
+                    login(request, user)
                     return redirect('account_verif')
         context = {
             'form_registration': RegistrationForm(),
@@ -91,15 +94,12 @@ def account_verif_view(request):
             verification_code = user_form.cleaned_data['code']
             # Check if the verification code matches the one in the database
             try:
-                account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code,
-                                                         state_acc='U')
-                # print(DATETIME_LOCAL)
-                # print(account_verif.datatime_finished)
-                # date_l = DATETIME_LOCAL.astimezone()
-                # if date_l < account_verif.datatime_finished():
-                account_verif.state_acc = 'A'
-                account_verif.save()
-                return redirect('account')
+                account_verif = AccountVerif.objects.get(recruiter=user, code=verification_code, state_acc='U')
+                date_l = DATETIME_LOCAL.strftime("%d/%m/%y %I:%M")
+                if date_l < account_verif.datatime_finished.strftime("%d/%m/%y %I:%M"):
+                    account_verif.state_acc = 'A'
+                    account_verif.save()
+                    return redirect('account')
             except AccountVerif.DoesNotExist:
                 user_form.add_error('code', 'Invalid verification code.')
         context = {
@@ -114,15 +114,18 @@ def account_verif_view(request):
 def login_view(request):
     try:
         if request.method == "POST":
-            user_form = RegistrationForm(data=request.POST)
-            print(user_form.data.__str__())
-            print(user_form.errors)
-            user = authenticate(username=user_form.data.get('username'),
-                                password=user_form.data.get('password'))
-            login(request, user)
-            return redirect('homepage')
+            user_form = LoginForm(data=request.POST)
+            user = authenticate(
+                request=request,
+                username=user_form.data.get('username'),
+                password=user_form.data.get('password'),
+            )
+            if user is not None:
+                login(request=request, user=user)
+                return redirect('homepage')
+            else:
+                print(request.user, request.session)
         context = {
-            'user': request.user,
             'form': LoginForm(),
         }
         return render(request, 'accounts/login.html', context)
@@ -159,9 +162,8 @@ def password_reset_view(request):
             user_chek = user_form.data.get  # сокращение для более удобного ввода в сравнение
             try:
                 user = User.objects.get(email=user_chek('email'), username=user_chek('username'))
-                print(user)
                 new_password = create_password()
-                user.password = new_password
+                user.set_password(new_password)
                 user.save()
                 password_reset_email(new_password, user.first_name, user.email, user.username)
                 return redirect('password_reset_done')

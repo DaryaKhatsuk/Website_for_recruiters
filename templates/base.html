@@ -13,30 +13,33 @@
 </head>
 <body>
     <nav>
-        <a href="{% url 'homepage' %}"> Home </a>
+            <a href="{% url 'homepage' %}">Home</a>
         {% if user.is_authenticated %}
             <a href="{% url 'account' %}">{{user.first_name}}</a>
-            <a href="{% url 'candidates' %}">Candidates</a>
-            <a href="{% url 'vacancies' %}">Vacancies</a>
+            <a href="{% url 'list_display' %}?form=notes" class="btn btn-primary">Notes</a>
+            <a href="{% url 'list_display' %}?form=companies" class="btn btn-primary">Companies</a>
+            <a href="{% url 'list_display' %}?form=vacancies" class="btn btn-primary">Vacancies</a>
+            <a href="{% url 'list_display' %}?form=emails" class="btn btn-primary">Emails</a>
+            <a href="{% url 'list_display' %}?form=candidates" class="btn btn-primary">Candidates</a>
+            <a href="{% url 'list_display' %}?form=meetings" class="btn btn-primary">Meetings</a>
+
+{#            <a href="{% url 'notes' %}">Notes</a>#}
+{#            <a href="{% url 'companies' %}">Companies</a>#}
+{#            <a href="{% url 'vacancies' %}">Vacancies</a>#}
+{#            <a href="{% url 'candidates' %}">Candidates</a>#}
+{#            <a href="{% url 'emails' %}">Emails</a>#}
             <a href="{% url 'logout' %}">Exit</a>
         {% else %}
             <a href="{% url 'registration' %}">Registration</a>
             <a href="{% url 'login' %}">Login</a>
             <a href="{% url 'password_reset' %}">Password reset</a>
         {% endif %}
-{#        <div class="datetime">#}
-{#            {% now "j/m/Y H:i:s" %}#}
-{#        </div>#}
     </nav>
-
     {% block page-content %}
     {% endblock %}
-{#    <div class="support">#}
-{#        <p>лщцозпгозшлмоАНЕВКУКЕЫВСМИТЬЙУКУЦЁЁ</p>#}
-{#    </div>#}
 </body>
 <footer>
      <a href='https://www.linkedin.com/in/daryakhatsuk/'>About me</a>
-     <a href="{% url 'support' %}">Support</a>
+     <a href='{% url 'support' %}'>Support</a>
 </footer>
 </html>

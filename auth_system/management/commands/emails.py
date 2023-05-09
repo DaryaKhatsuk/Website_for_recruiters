@@ -9,8 +9,8 @@ def email_registration_email(code='Not needed as all your information will be st
                        user_email='', username='', name=''):
     with get_connection() as connection:
         EmailMessage(subject='Congratulations on your registration!', body=f"Dear {name},\n your verification code: "
-                                                                           f"{code}\nYour username: {username}\n"
-                                                                           f"Happy using!",
+                                                                           f"{code}\n\nYour username: {username}\n"
+                                                                           f"\nHappy using!",
                      from_email=EMAIL_ADMIN, to=[user_email],
                      connection=connection).send()
 

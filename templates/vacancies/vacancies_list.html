@@ -8,21 +8,36 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sections.css' %}">
 </head>
 <body>
     <div class="sect">
-        {% for vacancy in vacancies %}
-            <table>
-                <tr>
-                    <td>{{ vacancy }}</td>
-                </tr>
-            </table>
-        {% empty %}
-            <div class="empty_base">
-                <h4>There are no notes</h4>
-            </div>
-        {% endfor %}
+        <table class="outer">
+            <tr>
+                <td>
+                    <table class="selectmenu">
+                        <tr>
+                            <td><a href="{% url 'vacancy_form' %}">New vacancy</a></td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                {% for vacancy in vacancies %}
+                    <tr class="content">
+                        <td>{{ vacancy }}</td>
+                    </tr>
+                {% empty %}
+                    <tr class="content">
+                        <td>
+                            <div class="empty_base">
+                                <h4>There are no vacancies</h4>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 {% endblock %}

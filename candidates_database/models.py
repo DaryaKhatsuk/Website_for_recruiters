@@ -2,34 +2,13 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-class AppendLine(models.Model):
-    recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
-    name_line = models.CharField(max_length=50)
-    line = models.CharField(max_length=100)
-
-
-class Comments(models.Model):
-    comment = models.CharField(max_length=300, null=True, blank=True)
-    datatime_create = models.DateTimeField()
-    datatime_update = models.DateTimeField()
-
-    def __str__(self):
-        return f'{self.comment}'
-
-    class Meta:
-        verbose_name = "Comment"
-        verbose_name_plural = "Comments"
-        ordering = ('comment',)
-
-
 class Company(models.Model):
     name = models.CharField(max_length=100)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
     website = models.URLField(null=True, blank=True)
     description = models.CharField(max_length=300, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
-    comments = models.ForeignKey(Comments, on_delete=models.CASCADE)
-    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
+    comments = models.CharField(max_length=300, null=True, blank=True)
     datatime_create = models.DateTimeField()
     datatime_update = models.DateTimeField()
 
@@ -58,14 +37,14 @@ class Currency(models.Model):
 class Vacancy(models.Model):
     title = models.CharField(max_length=100)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
     description = models.CharField(max_length=1024)
     salary_min = models.IntegerField(null=True, blank=True)
     salary_max = models.IntegerField(null=True, blank=True)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True)
+    currency = models.CharField(max_length=4, choices=(('U', 'USD'), ('E', 'EUR'), ('B', 'BYR'), ('UA', 'UAH'),
+                                                       ('R', 'RUB'), ('P', 'PLN')))
     location = models.CharField(max_length=100, null=True, blank=True)
-    comments = models.ForeignKey(Comments, on_delete=models.CASCADE)
-    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
+    comments = models.CharField(max_length=300, null=True, blank=True)
     open = models.BooleanField(default=True)
     datatime_create = models.DateTimeField()
     datatime_update = models.DateTimeField()
@@ -114,9 +93,7 @@ class Candidate(models.Model):
     source = models.URLField(null=True, blank=True)
     message = models.ForeignKey(Emails, max_length=1000, null=True, blank=True, on_delete=models.CASCADE)
     sun_emails = models.IntegerField(null=True, blank=True)
-    comments = models.ForeignKey(Comments, on_delete=models.CASCADE, related_name='comments_received', null=True,
-                                 blank=True)
-    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
+    comments = models.CharField(max_length=300, null=True, blank=True)
     datatime_create = models.DateTimeField()
     datatime_update = models.DateTimeField()
 
@@ -136,7 +113,6 @@ class Meetings(models.Model):
     attendees = models.ManyToManyField(User, related_name='meetings_attending')
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meetings_organizing')
     participant = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='meetings_organizing')
-    append_line = models.ForeignKey(AppendLine, on_delete=models.CASCADE)
     datatime_create = models.DateTimeField()
     datatime_update = models.DateTimeField()
 
@@ -166,9 +142,9 @@ class Notes(models.Model):
 
 
 class SelectionStage(models.Model):
-    status = models.CharField(max_length=30, choices=(('NS', 'No stage'), ('CS', 'Candidate Selection'),
-                                                      ('SI', 'Screening interview'), ('I', 'Interview'),
-                                                      ('TI', 'Technical interview'), ('O', 'Offer'),
+    status = models.CharField(max_length=30, choices=(('R', 'Refusal'), ('NS', 'No stage'),
+                                                      ('CS', 'Candidate Selection'), ('SI', 'Screening interview'),
+                                                      ('I', 'Interview'), ('TI', 'Technical interview'), ('O', 'Offer'),
                                                       ('AO', 'Accepted offer'), ('EtW', 'Exit to work')))
 
 

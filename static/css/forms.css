@@ -1,0 +1,58 @@
+.sect{
+    margin: 0 auto;
+}
+table.content_form{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100% content-box;
+    margin-bottom: 5px;
+}
+form{
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(97, 100, 107, 0.6);
+    border-radius: 10px;
+    padding: 5px 10px 5px 10px;
+    margin-bottom: 10px;
+}
+.title{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100% content-box;
+}
+input{
+    width: 200px;
+    padding: 3px 7px 3px 7px;
+    border: 1px solid rgba(97, 100, 107, 0.6);
+    border-radius: 5px;
+}
+select{
+    padding: 3px 7px 3px 7px;
+    border: 1px solid rgba(97, 100, 107, 0.6);
+    border-radius: 5px;
+    width: 140px;
+}
+textarea{
+    padding: 3px 7px 3px 7px;
+    border: 1px solid rgba(97, 100, 107, 0.6);
+    border-radius: 5px;
+}
+#id_resume_file{
+    /*width: 140px;*/
+}
+.submit{
+    width: auto;
+    background: rgba(255, 255, 255, 1);
+    padding: 4px 7px 4px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(24, 33, 58, 0.6);
+    text-decoration-line: none;
+    line-height: normal;
+    margin-bottom: 5px;
+}
+.submit:active{
+    background: aliceblue;
+    color: rgba(25, 41, 73, 1);
+    text-decoration-line: none;
+}

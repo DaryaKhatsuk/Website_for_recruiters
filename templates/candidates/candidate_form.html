@@ -8,10 +8,85 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
 </head>
 <body>
     <div class="sect">
+        <form class="form" method="post">
+            {% csrf_token %}
+                <h3 class="title">New candidate</h3>
+                <table class="content_form">
+                    <tr>
+                        <td>{{ forms.full_name.label_tag }}</td>
+                        <td>{{ forms.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.position.label_tag }}</td>
+                        <td>{{ forms.position }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.status.label_tag }}</td>
+                        <td>{{ forms.status }}</td>
+                    </tr>
+{#                    <tr>#}
+{#                        <td>{{ forms.interview_date.label_tag }}</td>#}
+{#                        <td>{{ forms.interview_date }}</td>#}
+{#                    </tr>#}
+                    <tr>
+                        <td>{{ forms.experience.label_tag }}</td>
+                        <td>{{ forms.experience }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.desired_salary.label_tag }}</td>
+                        <td>{{ forms.desired_salary }}{{ choices }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.location.label_tag }}</td>
+                        <td>{{ forms.location }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.email.label_tag }}</td>
+                        <td>{{ forms.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.phone.label_tag }}</td>
+                        <td>{{ forms.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.applied_vacancy.label_tag }}</td>
+                        <td>{{ forms.applied_vacancy }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.cover_letter.label_tag }}</td>
+                        <td>{{ forms.cover_letter }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.source.label_tag }}</td>
+                        <td>{{ forms.source }}</td>
+                    </tr>
+{#                    <tr>#}
+{#                        <td>{{ forms.message.label_tag }}</td>#}
+{#                        <td>{{ forms.message }}</td>#}
+{#                    </tr>#}
+{#                    <tr>#}
+{#                        <td>{{ forms.sun_emails.label_tag }}</td>#}
+{#                        <td>{{ forms.sun_emails }}</td>#}
+{#                    </tr>#}
+                    <tr>
+                        <td>{{ forms.comments.label_tag }}</td>
+                        <td>{{ forms.comments }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.resume_file.label_tag }}</td>
+                        <td>{{ forms.resume_file }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ forms.append_line.label_tag }}</td>
+                        <td>{{ forms.append_line }}</td>
+                    </tr>
+                </table>
+            <input class="submit" type="submit" value="Enter">
+        </form>
     </div>
 </body>
 {% endblock %}

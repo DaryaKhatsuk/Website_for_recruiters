@@ -1,0 +1,14 @@
+table.outer{
+    margin: 0 auto;
+}
+
+.selectmenu{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100% content-box;
+    margin-bottom: 10px;
+}
+.content{
+    margin-bottom: 7px;
+}
