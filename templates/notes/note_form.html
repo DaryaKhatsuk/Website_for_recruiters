@@ -14,6 +14,7 @@
     <div class="sect">
         <form class="form" method="post">
             {% csrf_token %}
+                <h3 class="title">New note</h3>
                 <table class="content_form">
                     <tr>
                         <td>{{ forms.title.label_tag }}</td>

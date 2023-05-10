@@ -23,6 +23,9 @@
                     <tr>
                         <td>{{ forms.website.label_tag }}</td>
                         <td>{{ forms.website }}</td>
+                        {% if forms.error_class %}
+                            <li>{{ forms.error_class }} {{ forms.errors|join:", " }}</li>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td>{{ forms.description.label_tag }}</td>
@@ -36,12 +39,9 @@
                         <td>{{ forms.comments.label_tag }}</td>
                         <td>{{ forms.comments }}</td>
                     </tr>
-                    <tr>
-                        <td>{{ forms.append_line.label_tag }}</td>
-                        <td>{{ forms.append_line }}</td>
-                    </tr>
                 </table>
             <input class="submit" type="submit" value="Enter">
+
         </form>
     </div>
 </body>

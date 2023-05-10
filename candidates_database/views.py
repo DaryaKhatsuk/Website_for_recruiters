@@ -117,8 +117,12 @@ def list_display_view(request):
     form_name = request.GET.get('form')
     print('form_name', form_name)
     queryset = forms.get(form_name)
+    print(queryset)
     context = {
         'forms': queryset[0],
+
+        'content_url': f'{queryset[1]}_',
+
         'url_name': queryset[1],
         'add_url': queryset[2],
         'selected_type': form_name,
@@ -162,36 +166,25 @@ def note_view(request, id_note):
 
 @login_required
 def note_form_view(request):
-    # try:
-    if request.method == 'POST':
-        form = NotesForm(request.POST)
-        if form.is_valid():
-            # note = Notes.objects.create(recruiter=request.user,
-            #                             title=form.cleaned_data.get('title'),
-            #                             note=form.cleaned_data.get('note'),
-            #                             datatime_create=DATETIME_LOCAL,
-            #                             datatime_update=DATETIME_LOCAL,)
-            # note.save()
-            # print(note.id)
-            # note_id = Notes.objects.filter(recruiter=note.recruiter,
-            #                                title=note.title,
-            #                                datatime_update=note.datatime_update)
-            # print(note_id)
-            note = form.save(commit=False)
-            note.recruiter = request.user
-            note.datatime_create = DATETIME_LOCAL
-            note.datatime_update = DATETIME_LOCAL
-            note.save()
-            return redirect('note', id_note=note.id)
-    else:
-        form = NotesForm()
-    context = {
-        'forms': NotesForm(),
-    }
-    return render(request, 'notes/note_form.html', context)
-    # except Exception as ex:
-    #     print(ex)
-    #     return redirect('error_frame')
+    try:
+        if request.method == 'POST':
+            form = NotesForm(request.POST)
+            if form.is_valid():
+                note = form.save(commit=False)
+                note.recruiter = request.user
+                note.datatime_create = DATETIME_LOCAL
+                note.datatime_update = DATETIME_LOCAL
+                note.save()
+                return redirect('note', id_note=note.id)
+        else:
+            form = NotesForm()
+        context = {
+            'forms': NotesForm(),
+        }
+        return render(request, 'notes/note_form.html', context)
+    except Exception as ex:
+        print(ex)
+        return redirect('error_frame')
 
 
 @login_required
@@ -235,14 +228,16 @@ def companies_view(request):
 
 @login_required
 def company_view(request, id_company):
-    try:
+    # try:
+        print(request, id_company)
+        company = Company.objects.filter(id=id_company, recruiter=request.user)
         context = {
-            'company': Company.objects.filter(id=id_company, recruiter=request.user),
+            'company': company,
         }
         return render(request, 'companies/company_card.html', context)
-    except Exception as ex:
-        print(ex)
-        return redirect('error_frame')
+    # except Exception as ex:
+    #     print(ex)
+    #     return redirect('error_frame')
 
 
 @login_required
@@ -251,25 +246,29 @@ def company_form_view(request):
     if request.method == 'POST':
         form = CompanyForm(request.POST)
         print(form.data)
+        print(form.data.__str__())
+        print(form.errors)
         if form.is_valid():
-            company = Company.objects.create(name=form.cleaned_data.get('name'),
-                                             recruiter=request.user,
-                                             website=form.cleaned_data.get('website'),
-                                             description=form.cleaned_data.get('description'),
-                                             industry=form.cleaned_data.get('industry'),
-                                             comments=form.cleaned_data.get('comments'),
-                                             datatime_create=DATETIME_LOCAL,
-                                             datatime_update=DATETIME_LOCAL,)
-            company.save()
-            # comment = Comments.objects.create()
-            # company = form.save(commit=False)
-            # company.recruiter = request.user
-            # company.datatime_create = DATETIME_LOCAL
-            # company.datatime_update = DATETIME_LOCAL
+            print('form valid')
+            # company = Company.objects.create(name=form.cleaned_data.get('name'),
+            #                                  recruiter=request.user,
+            #                                  website=form.cleaned_data.get('website'),
+            #                                  description=form.cleaned_data.get('description'),
+            #                                  industry=form.cleaned_data.get('industry'),
+            #                                  comments=form.cleaned_data.get('comments'),
+            #                                  datatime_create=DATETIME_LOCAL,
+            #                                  datatime_update=DATETIME_LOCAL,)
             # company.save()
+            company = form.save(commit=False)
+            print(company)
+            company.recruiter = request.user
+            company.datatime_create = DATETIME_LOCAL
+            company.datatime_update = DATETIME_LOCAL
+            company.save()
+            print('1:',company.id,'2:', company.name)
             return redirect('company', id_company=company.id)
-    else:
-        form = CompanyForm()
+    # else:
+    #     form = CompanyForm()
     context = {
         'forms': CompanyForm(),
     }
@@ -346,7 +345,7 @@ def vacancy_form_view(request):
                 vacancy.datatime_create = DATETIME_LOCAL
                 vacancy.datatime_update = DATETIME_LOCAL
                 vacancy.save()
-                return redirect('vacancy_card', vacancy_id=vacancy.id)
+                return redirect('vacancy_card', id_vacancy=vacancy.id)
         else:
             form = VacancyForm()
         context = {
@@ -360,16 +359,16 @@ def vacancy_form_view(request):
 
 
 @login_required
-def vacancy_update(request, vacancy_id):
+def vacancy_update(request, id_vacancy):
     try:
-        vacancy = get_object_or_404(Vacancy, id=vacancy_id, recruiter=request.user)
+        vacancy = get_object_or_404(Vacancy, id=id_vacancy, recruiter=request.user)
         if request.method == 'POST':
             form = VacancyForm(request.POST, instance=vacancy)
             if form.is_valid():
                 vacancy = form.save(commit=False)
                 vacancy.datatime_update = DATETIME_LOCAL
                 vacancy.save()
-                return redirect('vacancy_card', vacancy_id=vacancy.id)
+                return redirect('vacancy_card', id_vacancy=vacancy.id)
         else:
             form = VacancyForm(instance=vacancy)
         context = {
@@ -463,7 +462,7 @@ def candidate_form_view(request):
                 candidate.datatime_create = DATETIME_LOCAL
                 candidate.datatime_update = DATETIME_LOCAL
                 candidate.save()
-                # return redirect('vacancy_detail', vacancy_id=vacancy.id)
+                return redirect('vacancy_detail', id_candidate=candidate.id)
         else:
             form = CandidateForm()
         context = {

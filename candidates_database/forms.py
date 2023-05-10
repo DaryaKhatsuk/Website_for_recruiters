@@ -37,6 +37,7 @@ class CurrencyForm(forms.ModelForm):
 
 
 class CompanyForm(forms.ModelForm):
+    website = forms.CharField(max_length=300, required=False, empty_value=True, widget=forms.URLInput)
     description = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
     comments = forms.CharField(max_length=300, required=False, widget=forms.Textarea)
 

@@ -8,10 +8,50 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cards.css' %}">
 </head>
 <body>
     <div class="sect">
+        <table>
+            {% for company_display in company %}
+                <tbody>
+                    <tr>
+                        <td>{{ company_display.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Website:&#160;</td>
+                        <td>{{ company_display.website }}</td>
+                    </tr>
+                    <tr>
+                        <td>Description:&#160;</td>
+                        <td>{{ company_display.description }}</td>
+                    </tr>
+                    <tr>
+                        <td>Industry:&#160;</td>
+                        <td>{{ company_display.industry }}</td>
+                    </tr>
+                    <tr>
+                        <td>Comments:&#160;</td>
+                        <td>{{ company_display.comments }}</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>Date and time&#160;create:&#160;</td>
+                        <td>{{ company_display.datatime_create }}</td>
+                    </tr>
+                    <tr>
+                        <td>Date and time&#160;update:&#160;</td>
+                        <td>{{ company_display.datatime_update }}</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td colspan="2"><a href="{% url 'company_update' company_display.id %}">Update&#160;company</a></td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
     </div>
 </body>
 {% endblock %}

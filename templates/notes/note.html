@@ -24,17 +24,17 @@
                 </tbody>
                 <tbody>
                     <tr>
-                        <td>Datatime&#160;create&#160;</td>
+                        <td>Date and time&#160;create:&#160;</td>
                         <td>{{ note_display.datatime_create }}</td>
                     </tr>
                     <tr>
-                        <td>Datatime&#160;update&#160;</td>
+                        <td>Date and time&#160;update:&#160;</td>
                         <td>{{ note_display.datatime_update }}</td>
                     </tr>
                 </tbody>
                 <tbody>
                     <tr>
-                        <td colspan="2"><a href="{% url 'note_update' note_display.id %}">Update&#160;note&#160;</a></td>
+                        <td colspan="2"><a href="{% url 'note_update' note_display.id %}">Update&#160;note</a></td>
                     </tr>
                 </tbody>
             {% endfor %}

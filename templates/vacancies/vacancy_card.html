@@ -8,10 +8,74 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cards.css' %}">
 </head>
 <body>
     <div class="sect">
+        <table>
+            {% for vacancy_display in vacancy %}
+                <tbody>
+
+                    <tr>
+                        <td>{{ vacancy_display.title }}</td>
+                    </tr>
+                    <tr>
+                        <td>Vacancy&#160;state:&#160;</td>
+                        <td>{{ vacancy_display.open }}</td>
+                    </tr>
+                    <tr>
+                        <td>Company:&#160;</td>
+                        <td>{{ vacancy_display.company }}</td>
+                    </tr>
+                    <tr>
+                        <td>Salary&#160;from&#160;</td>
+                        <td>{{ vacancy_display.salary_min }}</td>
+                    </tr>
+                    <tr>
+                        <td>to&#160;</td>
+                        <td>{{ vacancy_display.salary_max }}&#160;{{ vacancy_display.currency }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ vacancy_display.location }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ vacancy_display.industry }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ vacancy_display.description }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ vacancy_display.comments }}</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>Date and time&#160;create:&#160;</td>
+                        <td>{{ vacancy_display.datatime_create }}</td>
+                    </tr>
+                    <tr>
+                        <td>Date and time&#160;update:&#160;</td>
+                        <td>{{ vacancy_display.datatime_update }}</td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td colspan="2"><a href="{% url 'company_update' vacancy_display.id %}">Update&#160;vacancy</a></td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+        <table>
+            {% for candidate in candidates %}
+                <tr>
+                    <td><a href="{% url 'candidate' candidate.id %}">{{ full_name }}&#160;Status:&#160;{{ candidate.status }}</a></td>
+                    <td>Desired salary:&#160;{{ candidate.desired_salary }}&#160;{{ candidate.currency }}</td>
+                    <td>Interview date{{ candidate.interview_date }}</td>
+                </tr>
+            {% empty %}
+                <a href="{% url 'candidate_form' %}">Add candidate</a>
+            {% endfor %}
+        </table>
     </div>
 </body>
 {% endblock %}

@@ -1,20 +1,12 @@
 from django.test import TestCase
-from .models import AppendLine, Comments, Company, Currency, Vacancy
-from .forms import AppendLineForm, CommentsForm, CompanyForm, CurrencyForm, VacancyForm
+from .models import Company, Currency, Vacancy
+from .forms import CompanyForm, CurrencyForm, VacancyForm
 from django.contrib.auth.models import User
 
 
 class ModelsTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='12345')
-
-    def test_AppendLine_model(self):
-        append_line = AppendLine.objects.create(recruiter=self.user, name_line='Test Name', line='Test Line')
-        self.assertEqual(str(append_line), 'Test Name')
-
-    def test_Comments_model(self):
-        comment = Comments.objects.create(comment='Test Comment')
-        self.assertEqual(str(comment), 'Test Comment')
 
     def test_Company_model(self):
         company = Company.objects.create(name='Test Company', recruiter=self.user, website='www.testcompany.com',
@@ -37,16 +29,6 @@ class ModelsTest(TestCase):
 class FormsTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='12345')
-
-    def test_AppendLine_form(self):
-        form_data = {'name_line': 'Test Name', 'line': 'Test Line'}
-        form = AppendLineForm(data=form_data)
-        self.assertTrue(form.is_valid())
-
-    def test_Comments_form(self):
-        form_data = {'comment': 'Test Comment'}
-        form = CommentsForm(data=form_data)
-        self.assertTrue(form.is_valid())
 
     def test_Currency_form(self):
         form_data = {'choices_lang': 'USD'}
@@ -79,7 +61,6 @@ class VacancyModelTestCase(TestCase):
             currency='USD',
             location='New York',
             comments='Test comment',
-            append_line='Test append line'
         )
 
     def test_vacancy_str(self):
